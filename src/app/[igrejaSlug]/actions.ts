@@ -27,6 +27,11 @@ export async function criarEvento(formData: FormData) {
     throw new Error("Acesso Negado: Apenas o Ansião tem permissão para criar eventos.")
   }
 
+  // Ansião só pode criar evento na SUA igreja
+  if (perfil.role === 'ansiao' && perfil.igreja_id !== igreja_id) {
+    throw new Error("Acesso Negado: Você só pode criar eventos na sua própria igreja.")
+  }
+
   const baseInsert: any = {
     igreja_id,
     titulo,
@@ -101,6 +106,11 @@ export async function editarEvento(formData: FormData) {
   const { data: evento_original } = await supabase.from('eventos').select('*').eq('id', evento_id).single()
 
   if (!perfil || !evento_original) throw new Error("Dados não encontrados.")
+
+  // Verificação de isolamento entre igrejas
+  if (perfil.role !== 'superadmin' && perfil.igreja_id !== evento_original.igreja_id) {
+    throw new Error("Acesso Negado: Você não pode editar eventos de outra igreja.")
+  }
 
   const isAnsiao = perfil.role === 'ansiao' || perfil.role === 'superadmin';
   const isOrganizador = isAnsiao || (perfil.role === 'lider' && perfil.departamento_id === evento_original.departamento_id && perfil.departamento_id !== null);
@@ -204,6 +214,11 @@ export async function deletarEvento(formData: FormData) {
   const { data: evento_original } = await supabase.from('eventos').select('*').eq('id', evento_id).single()
 
   if (!perfil || !evento_original) throw new Error("Dados não encontrados.")
+
+  // Verificação de isolamento entre igrejas
+  if (perfil.role !== 'superadmin' && perfil.igreja_id !== evento_original.igreja_id) {
+    throw new Error("Acesso Negado: Você não pode excluir eventos de outra igreja.")
+  }
 
   const isAnsiao = perfil.role === 'ansiao' || perfil.role === 'superadmin';
   const isOrganizador = isAnsiao || (perfil.role === 'lider' && perfil.departamento_id === evento_original.departamento_id && perfil.departamento_id !== null);

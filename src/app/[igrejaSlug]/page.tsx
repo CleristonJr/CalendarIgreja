@@ -46,12 +46,19 @@ export default async function IgrejaDashboard(props: Props) {
 
   // Muro de Segurança e Definições de Permissão
   if (user) {
-    const { data: perfil } = await supabase.from('perfis').select('forcar_troca_senha, role, departamento_id').eq('id', user.id).single();
+    const { data: perfil } = await supabase.from('perfis').select('forcar_troca_senha, role, departamento_id, igreja_id').eq('id', user.id).single();
     if (perfil?.forcar_troca_senha) {
       redirect("/trocar-senha");
     }
-    role = perfil?.role || 'visitante';
-    userDeptId = perfil?.departamento_id || null;
+    // Só concede permissões se o perfil pertencer A ESTA IGREJA
+    if (perfil?.igreja_id === igreja.id) {
+      role = perfil?.role || 'visitante';
+      userDeptId = perfil?.departamento_id || null;
+    }
+    // Se for superadmin, tem acesso total em qualquer igreja
+    if (perfil?.role === 'superadmin') {
+      role = 'superadmin';
+    }
   }
 
   // 3. Buscando departamentos restritos A ESTA IGREJA
