@@ -19,8 +19,9 @@ export default async function SaasLandingPage() {
       redirect("/trocar-senha");
     }
 
-    if (perfil?.igrejas && !Array.isArray(perfil.igrejas)) {
-       redirect(`/${perfil.igrejas.slug}`);
+    const igrejaData = perfil?.igrejas as any;
+    if (igrejaData && !Array.isArray(igrejaData) && igrejaData.slug) {
+       redirect(`/${igrejaData.slug}`);
     }
   }
 

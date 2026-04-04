@@ -29,8 +29,9 @@ export async function login(formData: FormData) {
 
   let destino = '/'; // Landing page padrão
   
-  if (perfil?.igrejas && !Array.isArray(perfil.igrejas)) {
-     destino = `/${perfil.igrejas.slug}`;
+  const igrejaData = perfil?.igrejas as any;
+  if (igrejaData && !Array.isArray(igrejaData) && igrejaData.slug) {
+     destino = `/${igrejaData.slug}`;
   }
 
   revalidatePath(destino, 'layout')
