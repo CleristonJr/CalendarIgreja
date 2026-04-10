@@ -57,9 +57,20 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
           
           {/* HEADER DIREITO (Dia / Data / Hora) */}
           <div className="flex items-start">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: hexCor + '15' }}>
-               <div className="w-5 h-5 rounded-full" style={{ backgroundColor: hexCor }}></div>
-            </div>
+            {evento.extendedProps?.departamento_imagem_url ? (
+              <div className="mr-4 flex shrink-0 items-center justify-center">
+                <img 
+                  src={evento.extendedProps.departamento_imagem_url} 
+                  alt="Ícone do Depto" 
+                  className="w-10 h-10 object-contain" 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full flex shrink-0 items-center justify-center mr-4" style={{ backgroundColor: hexCor + '15' }}>
+                 <div className="w-5 h-5 rounded-full" style={{ backgroundColor: hexCor }}></div>
+              </div>
+            )}
             <div>
               <h3 className="text-lg font-black text-slate-800 tracking-tight leading-tight uppercase">
                 {diaDaSemanaStr}

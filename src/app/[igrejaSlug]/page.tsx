@@ -57,7 +57,7 @@ export default async function PortalEventosPage(props: Props) {
   
   const { data: eventosDB } = await supabase
     .from("eventos")
-    .select("*, departamentos(nome, cor_identificacao)")
+    .select("*, departamentos(nome, cor_identificacao, imagem_url)")
     .eq("igreja_id", igreja.id)
     .gte("data_inicio", hoje.toISOString()) // Apenas eventos do dia atual em diante
     .order("data_inicio", { ascending: true });
@@ -73,6 +73,7 @@ export default async function PortalEventosPage(props: Props) {
       descricao: e.descricao,
       departamento_id: e.departamento_id,
       departamento_nome: e.departamentos?.nome || 'Geral',
+      departamento_imagem_url: e.departamentos?.imagem_url || null,
       convidados: e.convidados || [],
       imagem_url: e.imagem_url || null, 
     }
