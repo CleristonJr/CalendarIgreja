@@ -22,18 +22,41 @@ export async function adicionarDepartamento(formData: FormData) {
   const cor_identificacao = formData.get('cor_identificacao') as string
   const igreja_id = formData.get('igreja_id') as string
   const slug = formData.get('slug') as string
+  const imagem_url = formData.get('imagem_url') as string | null
 
   if (!nome || !cor_identificacao || !igreja_id) throw new Error("Dados incompletos.")
   
   const supabase = await verificarPermissaoLocal(igreja_id)
 
-  const { error } = await supabase.from('departamentos').insert([{ 
-    nome, 
-    cor_identificacao, 
-    igreja_id 
-  }])
+  const payload: any = { nome, cor_identificacao, igreja_id }
+  if (imagem_url) payload.imagem_url = imagem_url
+
+  const { error } = await supabase.from('departamentos').insert([payload])
 
   if (error) throw new Error("Erro ao salvar departamento: " + error.message)
+  
+  revalidatePath(`/${slug}/configuracoes`)
+  revalidatePath(`/${slug}`)
+}
+
+export async function editarDepartamento(formData: FormData) {
+  const dept_id = formData.get('dept_id') as string
+  const nome = formData.get('nome') as string
+  const cor_identificacao = formData.get('cor_identificacao') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+  const imagem_url = formData.get('imagem_url') as string | null
+
+  if (!dept_id || !nome || !cor_identificacao || !igreja_id) throw new Error("Dados incompletos.")
+
+  const supabase = await verificarPermissaoLocal(igreja_id)
+
+  const payload: any = { nome, cor_identificacao }
+  if (imagem_url) payload.imagem_url = imagem_url
+
+  const { error } = await supabase.from('departamentos').update(payload).eq('id', dept_id)
+
+  if (error) throw new Error("Erro ao editar departamento: " + error.message)
   
   revalidatePath(`/${slug}/configuracoes`)
   revalidatePath(`/${slug}`)

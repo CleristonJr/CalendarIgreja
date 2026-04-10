@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { adicionarDepartamento, deletarDepartamento, criarMembro, deletarMembro } from "./actions";
 import MenuSidebar from "@/components/MenuSidebar";
+import GerenciadorDepartamentos from "@/components/GerenciadorDepartamentos";
 
 // Paleta de Cores com base na indentidade Adventista
 const PALETA_CORES = [
@@ -81,95 +82,12 @@ export default async function ConfiguracoesIgreja({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full pb-10">
           <p className="text-slate-500 mb-8 mt-2">Gestão local de cores, departamentos e membros da equipe.</p>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
-          <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center">
-              <Tag className="w-5 h-5 mr-2 text-indigo-600" />
-              Departamentos Oficiais da Igreja
-            </h2>
-          </div>
-
-          <div className="p-6 md:flex md:space-x-8">
-            {/* Lado Esquerdo: Formulário */}
-            <div className="md:w-1/3 mb-8 md:mb-0">
-              <form action={adicionarDepartamento} className="space-y-4">
-                <input type="hidden" name="igreja_id" value={igreja.id} />
-                <input type="hidden" name="slug" value={slug} />
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nome do Departamento</label>
-                  <input
-                    name="nome"
-                    placeholder="Ex: Ministério Jovem"
-                    required
-                    className="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Cor Oficial (Calendário)</label>
-
-                  {/* Substituindo input type="color" clássico por uma grid controlada da marca local */}
-                  <div className="grid grid-cols-5 gap-2">
-                    {PALETA_CORES.map((cor, idx) => (
-                      <label key={idx} className="cursor-pointer relative group">
-                        <input type="radio" name="cor_identificacao" value={cor.hex} className="peer sr-only" required defaultChecked={idx === 0} />
-                        <div
-                          className="w-full aspect-square rounded-md shadow-sm border-2 border-transparent peer-checked:border-indigo-600 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-indigo-600 hover:scale-105 transition"
-                          style={{ backgroundColor: cor.hex }}
-                        ></div>
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                          {cor.nome}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition"
-                >
-                  <Plus className="w-5 h-5 mr-1" />
-                  Cadastrar Área
-                </button>
-              </form>
-            </div>
-
-            {/* Lado Direito: Lista de Departamentos */}
-            <div className="md:w-2/3 border-t md:border-t-0 md:border-l border-slate-100 md:pl-8 pt-8 md:pt-0">
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Departamentos Criados ({departamentos?.length})</h3>
-
-              {departamentos?.length === 0 ? (
-                <div className="p-8 border-2 border-dashed border-slate-200 rounded-xl text-center text-slate-400">
-                  Ainda não há departamentos listados na igreja.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {departamentos?.map(dept => (
-                    <div key={dept.id} className="flex justify-between items-center p-3 border border-slate-200 rounded-xl bg-white hover:border-slate-300 transition shadow-sm group">
-                      <div className="flex items-center space-x-3 overflow-hidden">
-                        <div className="w-4 h-full shrink-0 flex items-center justify-center">
-                          <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: dept.cor_identificacao }}></div>
-                        </div>
-                        <span className="font-semibold text-sm text-slate-700 truncate">{dept.nome}</span>
-                      </div>
-
-                      <form action={deletarDepartamento}>
-                        <input type="hidden" name="dept_id" value={dept.id} />
-                        <input type="hidden" name="igreja_id" value={igreja.id} />
-                        <input type="hidden" name="slug" value={slug} />
-                        <button type="submit" title="Excluir Depto." className="text-slate-300 hover:text-red-500 transition p-1">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </form>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+       <GerenciadorDepartamentos 
+          igreja={igreja} 
+          slug={slug} 
+          departamentos={departamentos || []} 
+          PALETA_CORES={PALETA_CORES} 
+        />
 
         {/* ---------------------------------------------------- */}
         {/* SESSÃO 2: MEMBROS DA EQUIPE (LÍDERES) */}
