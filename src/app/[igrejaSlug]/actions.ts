@@ -19,9 +19,13 @@ export async function criarEvento(formData: FormData) {
   const slug = formData.get('slug') as string
   const is_recurring = formData.get('is_recurring') === 'true'
   const imagem_url = formData.get('imagem_url') as string | null
+  const doxologia_json = formData.get('doxologia_json') as string | null
 
   if (!titulo || !data_inicio || !data_fim) throw new Error("Preencha todos os campos obrigatórios.")
-
+  
+  let doxologia = [];
+  try { if (doxologia_json) doxologia = JSON.parse(doxologia_json); } catch(e) {}
+  
   const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
 
   if (!perfil || (perfil.role !== 'ansiao' && perfil.role !== 'superadmin')) {
@@ -39,6 +43,7 @@ export async function criarEvento(formData: FormData) {
     descricao,
     responsavel_id: user.id,
     colaboradores_ids: colaboradores_ids.length > 0 ? colaboradores_ids : [],
+    doxologia_json: doxologia
   }
 
   if (imagem_url) {
@@ -99,6 +104,7 @@ export async function editarEvento(formData: FormData) {
   const convidados_json = formData.get('convidados_json') as string
   const slug = formData.get('slug') as string
   const modo_edicao = formData.get('modo_edicao') as string || 'single' // 'single' | 'future'
+  const doxologia_json = formData.get('doxologia_json') as string | null
 
   let convidados: any[] = [];
   try {
@@ -106,6 +112,9 @@ export async function editarEvento(formData: FormData) {
       convidados = JSON.parse(convidados_json);
     }
   } catch(e) { console.error("Erro ao dar parse em convidados JSON") }
+
+  let doxologia = [];
+  try { if (doxologia_json) doxologia = JSON.parse(doxologia_json); } catch(e) {}
 
   const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
   const { data: evento_original } = await supabase.from('eventos').select('*').eq('id', evento_id).single()
@@ -136,7 +145,8 @@ export async function editarEvento(formData: FormData) {
       data_inicio,
       data_fim,
       colaboradores_ids: colaboradores_ids.length > 0 ? colaboradores_ids : [],
-      convidados
+      convidados,
+      doxologia_json: doxologia
     };
 
     if (!isAnsiao) {

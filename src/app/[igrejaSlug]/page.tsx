@@ -76,6 +76,7 @@ export default async function PortalEventosPage(props: Props) {
       departamento_imagem_url: e.departamentos?.imagem_url || null,
       convidados: e.convidados || [],
       imagem_url: e.imagem_url || null, 
+      doxologia_json: e.doxologia_json || [],
     }
   })) || [];
 

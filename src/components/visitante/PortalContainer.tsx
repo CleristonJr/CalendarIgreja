@@ -97,10 +97,23 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
             <div className="p-8">
               <h2 className="text-2xl font-black text-slate-800 mb-2">Doxologia do Culto</h2>
               <p className="text-slate-500 font-medium mb-6">Visualização para {eventoParaDoxologia?.title}</p>
-              
-              <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl flex flex-col items-center justify-center text-center">
-                 <span className="text-indigo-800 font-bold mb-2 text-lg">Módulo em Desenvolvimento</span>
-                 <span className="text-indigo-600 text-sm">O sistema de Doxologia será implementado e integrado nesta janela nas próximas atualizações.</span>
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                {eventoParaDoxologia?.extendedProps?.doxologia_json && eventoParaDoxologia.extendedProps.doxologia_json.length > 0 ? (
+                  <div className="relative border-l-2 border-indigo-100 ml-3 space-y-6">
+                    {eventoParaDoxologia.extendedProps.doxologia_json.map((item: any, idx: number) => (
+                      <div key={idx} className="relative pl-6">
+                        <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-4 ring-white shadow-sm"></div>
+                        <div className="text-sm font-black text-indigo-600 tracking-wider mb-1">{item.hora}</div>
+                        <div className="text-base font-semibold text-slate-800 leading-snug">{item.descricao}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl flex flex-col items-center justify-center text-center">
+                    <span className="text-slate-400 font-bold block mb-1">Roteiro Indisponível</span>
+                    <span className="text-slate-500 text-sm">Este evento não possui um cronograma litúrgico ou passo-a-passo cadastrado.</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -130,6 +143,11 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                          <span className="block font-bold text-slate-800">{c.nome}</span>
                          {c.telefone && <span className="block text-xs font-medium text-slate-500 mt-1">{c.telefone}</span>}
                        </div>
+                       {c.departamento_nome && (
+                         <span className="shrink-0 bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-1 flex items-center justify-center rounded-lg uppercase tracking-wide">
+                           {c.departamento_nome}
+                         </span>
+                       )}
                     </li>
                   ))}
                 </ul>

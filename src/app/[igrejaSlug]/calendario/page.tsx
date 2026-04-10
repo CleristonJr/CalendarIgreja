@@ -79,6 +79,17 @@ export default async function IgrejaDashboard(props: Props) {
     .select("*, departamentos(nome, cor_identificacao)")
     .eq("igreja_id", igreja.id);
 
+  const { data: templatesDox } = await supabase
+    .from("doxologia_templates")
+    .select("*")
+    .eq("igreja_id", igreja.id)
+    .order('created_at', { ascending: false });
+
+  const { data: membrosDaIgreja } = await supabase
+    .from("perfis")
+    .select("id, nome_completo, email, telefone")
+    .eq("igreja_id", igreja.id);
+
   const eventosCalendario = eventosDB?.map((e: any) => ({
     id: e.id,
     title: e.titulo,
@@ -89,6 +100,7 @@ export default async function IgrejaDashboard(props: Props) {
       descricao: e.descricao,
       departamento_id: e.departamento_id,
       departamento_nome: e.departamentos?.nome || 'Geral',
+      doxologia_json: e.doxologia_json || [],
       colaboradores_ids: e.colaboradores_ids || [],
       convidados: e.convidados || [],
       recorrencia_id: e.recorrencia_id || null
@@ -116,6 +128,7 @@ export default async function IgrejaDashboard(props: Props) {
                 igreja_id={igreja.id}
                 slug={slug}
                 departamentos={departamentos || []}
+                templatesDox={templatesDox || []}
               />
             )}
           </div>

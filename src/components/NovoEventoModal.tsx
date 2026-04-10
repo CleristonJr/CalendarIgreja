@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, CalendarPlus } from "lucide-react";
 import { criarEvento } from "@/app/[igrejaSlug]/actions";
 import { createClient } from "@/utils/supabase/client";
+import DoxologiaEditor from "@/components/DoxologiaEditor";
 
 interface Departamento {
   id: string;
@@ -14,11 +15,13 @@ interface Departamento {
 export default function NovoEventoModal({
   igreja_id,
   slug,
-  departamentos
+  departamentos,
+  templatesDox
 }: {
   igreja_id: string;
   slug: string;
-  departamentos: Departamento[]
+  departamentos: Departamento[];
+  templatesDox?: any[];
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -150,6 +153,9 @@ export default function NovoEventoModal({
                   placeholder="Convidados, detalhes locais, o que levar..."
                 />
               </div>
+
+              {/* Módulo Doxologia Dinâmico */}
+              <DoxologiaEditor templates={templatesDox || []} />
 
               {/* Upload de Imagem */}
               <div>

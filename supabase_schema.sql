@@ -115,3 +115,17 @@ CREATE TABLE solicitacoes_igrejas (
 -- CREATE POLICY "Update para lideres" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'arquivos_igreja');
 -- CREATE POLICY "Delete para lideres" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'arquivos_igreja');
 
+-- ----------------------------------------------------
+-- 10. ATUALIZAÇÕES TARDIAS (V5 - DOXOLOGIA E PRE-SAVES)
+-- ----------------------------------------------------
+-- Para habilitar o controle de roteiros do evento e configuração de templates, execute:
+-- 
+-- ALTER TABLE eventos ADD COLUMN doxologia_json jsonb DEFAULT '[]'::jsonb;
+-- 
+-- CREATE TABLE doxologia_templates (
+--   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+--   igreja_id uuid REFERENCES igrejas(id) ON DELETE CASCADE,
+--   titulo text NOT NULL,
+--   itens jsonb DEFAULT '[]'::jsonb NOT NULL,
+--   created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+-- );

@@ -135,3 +135,64 @@ export async function deletarMembro(formData: FormData) {
 
   revalidatePath(`/${slug}/configuracoes`)
 }
+
+// ==========================================
+// DOXOLOGIA TEMPLATES
+// ==========================================
+
+export async function adicionarTemplateDoxologia(formData: FormData) {
+  const titulo = formData.get('titulo') as string
+  const itens_json = formData.get('itens_json') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+
+  if (!titulo || !igreja_id) throw new Error("Título oblrigatório.")
+
+  const supabase = await verificarPermissaoLocal(igreja_id)
+
+  let itens = [];
+  try { itens = JSON.parse(itens_json || '[]') } catch(e) {}
+
+  const { error } = await supabase.from('doxologia_templates').insert([{ 
+    titulo, 
+    itens, 
+    igreja_id 
+  }])
+
+  if (error) throw new Error("Erro ao salvar template: " + error.message)
+  
+  revalidatePath(`/${slug}/configuracoes`)
+}
+
+export async function editarTemplateDoxologia(formData: FormData) {
+  const template_id = formData.get('template_id') as string
+  const titulo = formData.get('titulo') as string
+  const itens_json = formData.get('itens_json') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+
+  if (!template_id || !titulo || !igreja_id) throw new Error("Dados incompletos.")
+
+  const supabase = await verificarPermissaoLocal(igreja_id)
+
+  let itens = [];
+  try { itens = JSON.parse(itens_json || '[]') } catch(e) {}
+
+  const { error } = await supabase.from('doxologia_templates').update({ titulo, itens }).eq('id', template_id)
+
+  if (error) throw new Error("Erro ao editar template: " + error.message)
+  
+  revalidatePath(`/${slug}/configuracoes`)
+}
+
+export async function deletarTemplateDoxologia(formData: FormData) {
+  const template_id = formData.get('template_id') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+
+  const supabase = await verificarPermissaoLocal(igreja_id)
+
+  await supabase.from('doxologia_templates').delete().eq('id', template_id)
+  
+  revalidatePath(`/${slug}/configuracoes`)
+}

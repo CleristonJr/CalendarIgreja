@@ -8,6 +8,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import { editarEvento, deletarEvento } from "@/app/[igrejaSlug]/actions";
+import DoxologiaEditor from "@/components/DoxologiaEditor";
 
 export interface EventoFullCalendar {
   id: string;
@@ -28,6 +29,9 @@ interface CalendarioProps {
   userDeptId?: string | null;
   slug?: string;
   departamentos?: any[];
+  igreja_id?: string;
+  membros?: any[];
+  templatesDox?: any[];
 }
 
 export default function Calendario({ 
@@ -38,7 +42,10 @@ export default function Calendario({
   userRole = 'visitante',
   userDeptId = null,
   slug = '',
-  departamentos = []
+  departamentos = [],
+  igreja_id = '',
+  membros = [],
+  templatesDox = []
 }: CalendarioProps) {
   const calendarRef = useRef<FullCalendar>(null);
   const [eventoSelecionado, setEventoSelecionado] = useState<any>(null);
@@ -551,8 +558,16 @@ export default function Calendario({
                     </div>
                   </div>
 
+                  {/* DOXOLOGIA EDITOR */}
+                  {isOrganizador && (
+                    <DoxologiaEditor 
+                      templates={templatesDox || []} 
+                      doxologiaInicial={eventoSelecionado.extendedProps?.doxologia_json || []}
+                    />
+                  )}
+
                   {/* GERENCIADOR DE LISTA DE CONVIDADOS */}
-                  <div className="p-3 border border-indigo-200 rounded-lg bg-indigo-50/50 space-y-3">
+                  <div className="p-3 border border-indigo-200 rounded-lg bg-indigo-50/50 space-y-3 mt-4">
                     <h4 className="text-sm font-bold text-indigo-900 border-b border-indigo-100 pb-1 mb-2 flex items-center">
                       <Users className="w-4 h-4 mr-2" /> Gerenciar Lista de Convidados
                     </h4>

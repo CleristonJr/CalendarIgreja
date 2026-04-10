@@ -5,6 +5,7 @@ import Link from "next/link";
 import { adicionarDepartamento, deletarDepartamento, criarMembro, deletarMembro } from "./actions";
 import MenuSidebar from "@/components/MenuSidebar";
 import GerenciadorDepartamentos from "@/components/GerenciadorDepartamentos";
+import GerenciadorDoxologiaTemplates from "@/components/GerenciadorDoxologiaTemplates";
 
 // Paleta de Cores com base na indentidade Adventista
 const PALETA_CORES = [
@@ -61,6 +62,13 @@ export default async function ConfiguracoesIgreja({
     .eq("igreja_id", igreja.id)
     .order('created_at');
 
+  // Buscando Templates de Doxologia desta igreja
+  const { data: templates } = await supabase
+    .from("doxologia_templates")
+    .select("*")
+    .eq("igreja_id", igreja.id)
+    .order('created_at', { ascending: false });
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full bg-slate-50 text-slate-900 overflow-hidden">
       <MenuSidebar 
@@ -87,6 +95,12 @@ export default async function ConfiguracoesIgreja({
           slug={slug} 
           departamentos={departamentos || []} 
           PALETA_CORES={PALETA_CORES} 
+        />
+
+        <GerenciadorDoxologiaTemplates
+          igreja={igreja}
+          slug={slug}
+          templates={templates || []}
         />
 
         {/* ---------------------------------------------------- */}
