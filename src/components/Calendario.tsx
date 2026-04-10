@@ -32,6 +32,7 @@ interface CalendarioProps {
   igreja_id?: string;
   membros?: any[];
   templatesDox?: any[];
+  startEditEventoId?: string;
 }
 
 export default function Calendario({ 
@@ -45,7 +46,8 @@ export default function Calendario({
   departamentos = [],
   igreja_id = '',
   membros = [],
-  templatesDox = []
+  templatesDox = [],
+  startEditEventoId
 }: CalendarioProps) {
   const calendarRef = useRef<FullCalendar>(null);
   const [eventoSelecionado, setEventoSelecionado] = useState<any>(null);
@@ -58,6 +60,24 @@ export default function Calendario({
   const [convidadosList, setConvidadosList] = useState<any[]>([]);
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
+
+  // Auto-abre um evento contido via query params para edição imediata
+  React.useEffect(() => {
+    if (startEditEventoId && eventos.length > 0) {
+      const eventoUrl = eventos.find(e => e.id === startEditEventoId);
+      if (eventoUrl) {
+        setEventoSelecionado({
+          id: eventoUrl.id,
+          title: eventoUrl.title,
+          start: eventoUrl.start ? new Date(eventoUrl.start) : new Date(),
+          end: eventoUrl.end ? new Date(eventoUrl.end) : null,
+          extendedProps: eventoUrl.extendedProps
+        });
+        setConvidadosList(eventoUrl.extendedProps?.convidados || []);
+        setIsEditing(true); // Abre direto na aba de gerenciar
+      }
+    }
+  }, [startEditEventoId, eventos]);
 
   const isAnsiao = userRole === 'ansiao' || userRole === 'superadmin';
 

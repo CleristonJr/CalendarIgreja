@@ -37,10 +37,22 @@ export default async function PortalEventosPage(props: Props) {
   // 2. Autenticação para repassar pra Sidebar
   const { data: { user } } = await supabase.auth.getUser();
 
+  let userData = user ? { id: user.id, role: 'visitante', departamento_id: null } : null;
+
   if (user) {
-    const { data: perfil } = await supabase.from('perfis').select('forcar_troca_senha, igreja_id').eq('id', user.id).single();
+    const { data: perfil } = await supabase.from('perfis').select('forcar_troca_senha, igreja_id, role, departamento_id').eq('id', user.id).single();
     if (perfil?.forcar_troca_senha) {
       redirect("/trocar-senha");
+    }
+    
+    if (perfil && perfil.igreja_id === igreja.id) {
+       userData = {
+         id: user.id,
+         role: perfil.role,
+         departamento_id: perfil.departamento_id
+       };
+    } else if (perfil?.role === 'superadmin') {
+       userData = { id: user.id, role: 'superadmin', departamento_id: null };
     }
   }
 
@@ -85,7 +97,7 @@ export default async function PortalEventosPage(props: Props) {
       igreja={igreja}
       departamentos={departamentos || []}
       eventos={eventos}
-      user={user}
+      user={userData}
       slug={slug}
     />
   );

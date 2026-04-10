@@ -1,12 +1,17 @@
 import React from 'react';
+import Link from 'next/link';
+import { Pencil } from 'lucide-react';
 
 interface EventCardProps {
   evento: any;
   onOpenDoxologia?: () => void;
   onOpenEscalados?: () => void;
+  isVisitor?: boolean;
+  canEdit?: boolean;
+  slug?: string;
 }
 
-export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: EventCardProps) {
+export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, isVisitor = false, canEdit = false, slug = '' }: EventCardProps) {
   // Extrai Informações de Data Formatada
   const dateObj = new Date(evento.start || new Date());
 
@@ -52,7 +57,16 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
       </div>
 
       {/* BLOCO DA DIREITA (CONTEÚDO) */}
-      <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+      <div className="flex-1 p-6 md:p-8 flex flex-col justify-between relative">
+        {canEdit && (
+          <Link
+            href={`/${slug}/calendario?editId=${evento.id}`}
+            title="Editar Evento"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors z-10"
+          >
+            <Pencil className="w-5 h-5" />
+          </Link>
+        )}
         <div className="space-y-4">
 
           {/* HEADER DIREITO (Dia / Data / Hora) */}
@@ -94,23 +108,25 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
         </div>
 
         {/* BOTÕES DE AÇÃO */}
-        <div className="mt-8 flex gap-3 flex-wrap">
-          <button
-            type="button"
-            onClick={onOpenDoxologia}
-            className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
-          >
-            Doxologia
-          </button>
+        {!isVisitor && (
+          <div className="mt-8 flex gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={onOpenDoxologia}
+              className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
+            >
+              Doxologia
+            </button>
 
-          <button
-            type="button"
-            onClick={onOpenEscalados}
-            className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
-          >
-            Escalados
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={onOpenEscalados}
+              className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
+            >
+              Escalados
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

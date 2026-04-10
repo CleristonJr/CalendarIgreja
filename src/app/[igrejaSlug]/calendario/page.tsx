@@ -10,11 +10,14 @@ export const revalidate = 0;
 
 interface Props {
   params: Promise<{ igrejaSlug: string }>
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function IgrejaDashboard(props: Props) {
   const params = await props.params;
+  const searchParams = props.searchParams ? await props.searchParams : {};
   const slug = params.igrejaSlug;
+  const editId = searchParams.editId as string | undefined;
 
   const supabase = await createClient();
 
@@ -153,6 +156,7 @@ export default async function IgrejaDashboard(props: Props) {
             userDeptId={userDeptId}
             slug={slug}
             departamentos={departamentos || []}
+            startEditEventoId={editId}
           />
         </div>
       </main>

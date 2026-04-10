@@ -67,20 +67,30 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                 <span className="text-slate-500 text-sm">Não há programações futuras correspondentes aos filtros selecionados.</span>
             </div>
           ) : (
-            eventosFiltrados.map((evento) => (
-              <EventCard 
-                key={evento.id} 
-                evento={evento} 
-                onOpenDoxologia={() => {
-                  setEventoParaDoxologia(evento);
-                  setPopupDoxologiaOpen(true);
-                }}
-                onOpenEscalados={() => {
-                  setEventoParaEscalados(evento);
-                  setPopupEscaladosOpen(true);
-                }}
-              />
-            ))
+            eventosFiltrados.map((evento) => {
+              const isAnsiao = user?.role === 'ansiao' || user?.role === 'superadmin';
+              const isOrganizador = isAnsiao || (user?.role === 'lider' && user?.departamento_id === evento.extendedProps?.departamento_id);
+              const isColaborador = user?.role === 'lider' && user?.departamento_id && (evento.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
+              const canEdit = isOrganizador || Boolean(isColaborador);
+
+              return (
+                <EventCard 
+                  key={evento.id} 
+                  evento={evento} 
+                  onOpenDoxologia={() => {
+                    setEventoParaDoxologia(evento);
+                    setPopupDoxologiaOpen(true);
+                  }}
+                  onOpenEscalados={() => {
+                    setEventoParaEscalados(evento);
+                    setPopupEscaladosOpen(true);
+                  }}
+                  isVisitor={!user}
+                  canEdit={canEdit}
+                  slug={slug}
+                />
+              )
+            })
           )}
           
           <div className="h-10 w-full shrink-0"></div>
