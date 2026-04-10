@@ -94,14 +94,14 @@ export default function EventosSidebar({
 
                   {/* Ícone Dinâmico: Usa a foto se existir, senão a bolinha */}
                   {dept.imagem_url ? (
-                    <img src={dept.imagem_url} alt={dept.nome} className="w-8 h-8 rounded-full shrink-0 object-cover border border-slate-200 shadow-sm" />
+                    <img src={dept.imagem_url} alt={dept.nome} className="w-10 h-10 shrink-0 object-contain" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center opacity-80 shadow-sm" style={{ backgroundColor: dept.cor_identificacao + '25' }}>
-                      <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: dept.cor_identificacao }} />
+                    <div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center opacity-80" style={{ backgroundColor: dept.cor_identificacao + '25' }}>
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: dept.cor_identificacao }} />
                     </div>
                   )}
 
-                  <span className="text-[13px] font-bold text-[#1f2937] truncate group-hover:text-black uppercase tracking-wide">
+                  <span className="text-[14px] font-bold text-slate-500 truncate group-hover:text-slate-700 uppercase tracking-wide">
                     {dept.nome}
                   </span>
                 </div>

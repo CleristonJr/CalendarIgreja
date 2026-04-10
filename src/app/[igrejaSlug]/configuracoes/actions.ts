@@ -77,7 +77,10 @@ export async function deletarDepartamento(formData: FormData) {
 
 export async function criarMembro(formData: FormData) {
   const nome = formData.get('nome') as string
-  const email = formData.get('email') as string
+  
+  const email_prefix = formData.get('email_prefix') as string
+  const email_suffix = formData.get('email_suffix') as string
+  const email = email_prefix && email_suffix ? `${email_prefix}${email_suffix}`.toLowerCase() : '';
   const password = formData.get('password') as string
   const departamento_id = formData.get('departamento_id') as string // optional
   const igreja_id = formData.get('igreja_id') as string
