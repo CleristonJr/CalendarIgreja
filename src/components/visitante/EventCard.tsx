@@ -56,9 +56,9 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
         <div className="space-y-4">
 
           {/* HEADER DIREITO (Dia / Data / Hora) */}
-          <div className="flex items-start">
+          <div className="flex items-center mb-6">
             {evento.extendedProps?.departamento_imagem_url ? (
-              <div className="mr-4 flex shrink-0 items-center justify-center">
+              <div className="mr-5 flex shrink-0 items-center justify-center">
                 <img
                   src={evento.extendedProps.departamento_imagem_url}
                   alt="Ícone do Depto"
@@ -67,16 +67,16 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
                 />
               </div>
             ) : (
-              <div className="w-20 h-20 rounded-full flex shrink-0 items-center justify-center mr-4" style={{ backgroundColor: hexCor + '15' }}>
-                <div className="w-5 h-5 rounded-full" style={{ backgroundColor: hexCor }}></div>
+              <div className="w-20 h-20 rounded-full flex shrink-0 items-center justify-center mr-5" style={{ backgroundColor: hexCor + '15' }}>
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: hexCor }}></div>
               </div>
             )}
-            <div>
-              <h3 className="text-lg font-black text-slate-800 tracking-tight leading-tight uppercase">
+            <div className="flex flex-col justify-center">
+              <h3 className="text-xl sm:text-[22px] font-bold text-slate-600 uppercase tracking-tight leading-none mb-1.5">
                 {diaDaSemanaStr}
               </h3>
-              <div className="text-sm font-medium text-slate-500 uppercase tracking-widest mt-0.5">
-                {displayDataText} • {horaMinuto}
+              <div className="text-xl sm:text-[22px] font-normal text-slate-500 uppercase tracking-tight leading-none">
+                {displayDataText} <span className="text-slate-400 text-lg mx-1">•</span> {horaMinuto}
               </div>
             </div>
           </div>
