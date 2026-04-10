@@ -9,7 +9,7 @@ interface EventCardProps {
 export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: EventCardProps) {
   // Extrai Informações de Data Formatada
   const dateObj = new Date(evento.start || new Date());
-  
+
   const diasDaSemana = ['DOMINGO', 'SEGUNDA FEIRA', 'TERÇA FEIRA', 'QUARTA FEIRA', 'QUINTA FEIRA', 'SEXTA FEIRA', 'SÁBADO'];
   const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
@@ -21,7 +21,7 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
 
   // Cores dinâmicas para o gradiente de fallback caso não tenha imagem_url
   const hexCor = evento.backgroundColor || '#3b82f6';
-  
+
   // Imagem mockada e tratamento
   // Na próxima etapa amarraremos isso ao `evento.imagem_url` no BD. 
   // O Supabase Image Url vem direto das chamadas ou podemos checar `evento.extendedProps.imagem_url`
@@ -29,16 +29,16 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
 
   return (
     <div className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col md:flex-row overflow-hidden group">
-      
+
       {/* BLOCO DA ESQUERDA (IMAGEM / BANNER) */}
       <div className="md:w-[45%] h-64 md:h-auto min-h-[300px] relative overflow-hidden flex items-center justify-center m-1.5 rounded-[20px]">
         {imagemUrl ? (
           <img src={imagemUrl} alt="Capa do Evento" className="w-full h-full object-cover rounded-[20px] filter brightness-95 group-hover:scale-105 transition-transform duration-700" />
         ) : (
-          <div 
+          <div
             className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white text-center"
-            style={{ 
-              background: `linear-gradient(135deg, ${hexCor} 0%, #1e293b 100%)` 
+            style={{
+              background: `linear-gradient(135deg, ${hexCor} 0%, #1e293b 100%)`
             }}
           >
             <span className="text-xl font-bold tracking-widest opacity-80 uppercase mb-2">Evento</span>
@@ -54,21 +54,21 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
       {/* BLOCO DA DIREITA (CONTEÚDO) */}
       <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
         <div className="space-y-4">
-          
+
           {/* HEADER DIREITO (Dia / Data / Hora) */}
           <div className="flex items-start">
             {evento.extendedProps?.departamento_imagem_url ? (
               <div className="mr-4 flex shrink-0 items-center justify-center">
-                <img 
-                  src={evento.extendedProps.departamento_imagem_url} 
-                  alt="Ícone do Depto" 
-                  className="w-10 h-10 object-contain" 
+                <img
+                  src={evento.extendedProps.departamento_imagem_url}
+                  alt="Ícone do Depto"
+                  className="w-20 h-20 object-contain"
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-full flex shrink-0 items-center justify-center mr-4" style={{ backgroundColor: hexCor + '15' }}>
-                 <div className="w-5 h-5 rounded-full" style={{ backgroundColor: hexCor }}></div>
+              <div className="w-20 h-20 rounded-full flex shrink-0 items-center justify-center mr-4" style={{ backgroundColor: hexCor + '15' }}>
+                <div className="w-5 h-5 rounded-full" style={{ backgroundColor: hexCor }}></div>
               </div>
             )}
             <div>
@@ -95,15 +95,15 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
 
         {/* BOTÕES DE AÇÃO */}
         <div className="mt-8 flex gap-3 flex-wrap">
-          <button 
+          <button
             type="button"
             onClick={onOpenDoxologia}
             className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
           >
             Doxologia
           </button>
-          
-          <button 
+
+          <button
             type="button"
             onClick={onOpenEscalados}
             className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
@@ -112,7 +112,7 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados }: 
           </button>
         </div>
       </div>
-      
+
     </div>
   );
 }
