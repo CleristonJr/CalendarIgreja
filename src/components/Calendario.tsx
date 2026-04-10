@@ -312,73 +312,80 @@ export default function Calendario({
           const colab_ids = arg.event.extendedProps?.colaboradores_ids || [];
           const isDayView = arg.view.type === 'dayGridDay' || arg.view.type === 'listDay';
 
+          const eventColor = arg.event.backgroundColor || '#4f46e5';
+
           return (
-            <div className="w-full h-full flex flex-col p-1.5 box-border">
+            <div className="w-full h-full flex flex-col p-2.5 box-border bg-white rounded-lg shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden relative group" style={{ minHeight: '100%' }}>
+              {/* Tarja de cor indicativa na esquerda */}
+              <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: eventColor }}></div>
               
-              <div className="flex flex-col mb-1.5">
-                <h3 className="font-bold text-sm md:text-md leading-tight text-black/90 truncate">
-                  {arg.event.title}
-                </h3>
-                {timeString && (
-                  <div className="flex items-center text-[11px] font-medium text-black/70 mt-0.5">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {timeString}
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-auto space-y-1.5">
-                {deptOrg && (
-                  <div className="flex items-center text-[10px] text-black/70">
-                    <Tag className="w-2.5 h-2.5 mr-1 text-black/50 shrink-0" /> 
-                    <span className="truncate">Org: <strong className="font-semibold">{deptOrg}</strong></span>
-                  </div>
-                )}
-
-                {/* Exibindo Departamentos Colaboradores do Evento */}
-                {colab_ids.length > 0 && (
-                   <div className="flex items-start text-[10px] text-black/70">
-                      <Users className="w-2.5 h-2.5 mr-1 text-black/50 shrink-0 mt-0.5" />
-                      <div className="flex flex-wrap gap-0.5">
-                        {colab_ids.map((cid: string) => {
-                           const d = departamentos?.find(dept => dept.id === cid);
-                           return d ? <span key={cid} className="bg-white/40 text-black/80 px-1 py-0.5 rounded text-[9px] mr-1">Colab: {d.nome}</span> : null;
-                        })}
-                      </div>
-                   </div>
-                )}
-
-                {/* Exibindo a Lista de Convidados de forma limpa */}
-                {hasGuests && (
-                  <div className="mt-1 pt-1.5 border-t border-black/10">
-                    <div className="flex flex-col gap-1.5 mt-0.5">
-                      {Object.entries(groupGuestsByDept(guests, deptOrg)).map(([deptName, deptGuests]: [string, any]) => (
-                        <div key={deptName} className="flex flex-col bg-white/40 rounded pb-1">
-                          <span className="text-[10px] font-bold text-black/60 bg-white/50 px-1.5 py-0.5 rounded-t mb-0.5">Dep. {deptName}</span>
-                          <div className="px-1.5 flex flex-col gap-0.5 text-black/90">
-                            {deptGuests.map((conv: any, idx: number) => (
-                              <span key={idx} className="font-bold text-[11px] leading-tight truncate px-1 border-l-2 border-black/20">
-                                {conv.nome}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+              <div className="pl-2 flex flex-col h-full z-10">
+                <div className="flex flex-col mb-2">
+                  <h3 className="font-bold text-[14px] leading-tight text-slate-800 mb-0.5">
+                    {arg.event.title}
+                  </h3>
+                  {timeString && (
+                    <div className="flex items-center text-[12px] font-medium text-slate-500">
+                      <Clock className="w-3.5 h-3.5 mr-1" />
+                      {timeString}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {/* Exibindo a Descrição se houver */}
-                {arg.event.extendedProps?.descricao && isDayView && (
-                  <div className="mt-1.5 pt-1.5 border-t border-black/10">
-                    <p className="text-[10px] font-bold text-black/50 uppercase tracking-wider mb-0.5">Descrição</p>
-                    <p className="text-[11px] font-medium text-black/80 whitespace-pre-wrap leading-snug">
-                      {arg.event.extendedProps.descricao}
-                    </p>
-                  </div>
-                )}
+                <div className="mt-auto space-y-2">
+                  {/* ORGANIZADOR & COLABORADORES */}
+                  {(deptOrg || colab_ids.length > 0) && (
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {deptOrg && (
+                        <span className="flex items-center bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-200">
+                          <Tag className="w-2.5 h-2.5 mr-1" /> {deptOrg}
+                        </span>
+                      )}
+                      
+                      {colab_ids.map((cid: string) => {
+                         const d = departamentos?.find(dept => dept.id === cid);
+                         return d ? (
+                           <span key={cid} className="flex items-center bg-slate-50 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-medium border border-slate-100">
+                             <Users className="w-2.5 h-2.5 mr-1" /> {d.nome}
+                           </span>
+                         ) : null;
+                      })}
+                    </div>
+                  )}
+
+                  {/* LISTA DE CONVIDADOS */}
+                  {hasGuests && (
+                    <div className="mt-2 pt-2 border-t border-slate-100">
+                      <div className="flex flex-col gap-2">
+                        {Object.entries(groupGuestsByDept(guests, deptOrg)).map(([deptName, deptGuests]: [string, any]) => (
+                          <div key={deptName} className="flex flex-col bg-slate-50 rounded-md border border-slate-100 overflow-hidden">
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100/80 px-2 py-1 uppercase tracking-wider">
+                              Dep. {deptName}
+                            </span>
+                            <div className="px-2 py-1 flex flex-col gap-0.5">
+                              {deptGuests.map((conv: any, idx: number) => (
+                                <span key={idx} className="font-semibold text-[11px] text-slate-700 leading-tight">
+                                  {conv.nome}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Exibindo a Descrição se houver */}
+                  {arg.event.extendedProps?.descricao && isDayView && (
+                    <div className="mt-2 pt-2 border-t border-slate-100">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição</p>
+                      <p className="text-[11px] font-medium text-slate-600 whitespace-pre-wrap leading-snug">
+                        {arg.event.extendedProps.descricao}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-
             </div>
           );
         }}
