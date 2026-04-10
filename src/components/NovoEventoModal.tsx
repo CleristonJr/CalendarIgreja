@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { X, CalendarPlus } from "lucide-react";
 import { criarEvento } from "@/app/[igrejaSlug]/actions";
+import { createClient } from "@/utils/supabase/client";
 
 interface Departamento {
   id: string;
@@ -25,8 +26,25 @@ export default function NovoEventoModal({
   async function handleAction(formData: FormData) {
     setLoading(true);
     try {
+      const arquivoImagem = formData.get("imagem") as File | null;
+      if (arquivoImagem && arquivoImagem.size > 0) {
+        const supabase = createClient();
+        const extensao = arquivoImagem.name.split('.').pop();
+        const nomeArquivo = `${igreja_id}_evento_${Date.now()}.${extensao}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("arquivos_igreja")
+          .upload(nomeArquivo, arquivoImagem);
+
+        if (uploadError) throw new Error("Falha no upload da imagem: " + uploadError.message);
+
+        const { data: { publicUrl } } = supabase.storage.from("arquivos_igreja").getPublicUrl(nomeArquivo);
+        formData.set("imagem_url", publicUrl);
+      }
+
       await criarEvento(formData);
       setOpen(false);
+      window.location.reload();
     } catch (error: any) {
       alert("Erro ao criar evento: " + error.message);
     } finally {
@@ -131,6 +149,18 @@ export default function NovoEventoModal({
                   className="w-full text-sm border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 resize-none"
                   placeholder="Convidados, detalhes locais, o que levar..."
                 />
+              </div>
+
+              {/* Upload de Imagem */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Banner / Imagem <span className="text-slate-400 font-normal">(Opcional)</span></label>
+                <input
+                  type="file"
+                  name="imagem"
+                  accept="image/png, image/jpeg, image/webp"
+                  className="w-full text-sm border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 bg-white"
+                />
+                <p className="text-xs text-slate-500 mt-1">Será exibida com destaque no Portal Eventos.</p>
               </div>
 
               {/* Recorrência Semanal */}

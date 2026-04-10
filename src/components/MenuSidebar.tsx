@@ -9,7 +9,8 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -66,6 +67,18 @@ export default function MenuSidebar({
         </div>
         <Link 
           href={`/${slug}`} 
+          onClick={() => setIsOpen(false)}
+          className={`flex items-center px-3 py-2.5 rounded-md font-medium mb-1 transition-colors ${
+            paginaAtiva === 'portal' && !departamentoAtivoId 
+              ? 'bg-indigo-50 text-indigo-700' 
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+        >
+          <Globe className="w-5 h-5 mr-3 shrink-0" />
+          <span className="truncate">Portal Eventos</span>
+        </Link>
+        <Link 
+          href={`/${slug}/calendario`} 
           onClick={() => setIsOpen(false)}
           className={`flex items-center px-3 py-2.5 rounded-md font-medium mb-4 transition-colors ${
             paginaAtiva === 'calendario' && !departamentoAtivoId 
@@ -167,7 +180,7 @@ export default function MenuSidebar({
 
       {/* Sidebar Física (Visível e Lateral no Desktop / Deslizante no Mobile) */}
       <aside 
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-300 shadow-xl md:shadow-none
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-white flex flex-col transform transition-transform duration-300 shadow-2xl md:shadow-sm rounded-r-3xl
             ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >

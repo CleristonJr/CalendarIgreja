@@ -18,6 +18,7 @@ export async function criarEvento(formData: FormData) {
   const igreja_id = formData.get('igreja_id') as string
   const slug = formData.get('slug') as string
   const is_recurring = formData.get('is_recurring') === 'true'
+  const imagem_url = formData.get('imagem_url') as string | null
 
   if (!titulo || !data_inicio || !data_fim) throw new Error("Preencha todos os campos obrigatórios.")
 
@@ -38,6 +39,10 @@ export async function criarEvento(formData: FormData) {
     descricao,
     responsavel_id: user.id,
     colaboradores_ids: colaboradores_ids.length > 0 ? colaboradores_ids : [],
+  }
+
+  if (imagem_url) {
+    baseInsert.imagem_url = imagem_url
   }
 
   if (departamento_id && departamento_id.trim() !== "") {

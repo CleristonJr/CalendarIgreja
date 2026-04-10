@@ -98,3 +98,20 @@ CREATE TABLE solicitacoes_igrejas (
 -- Adicionando Suporte a Eventos Recorrentes Semanais
 -- Execute isto manualmente no Supabase SQL Editor:
 -- ALTER TABLE eventos ADD COLUMN recorrencia_id text DEFAULT NULL;
+
+-- ----------------------------------------------------
+-- 9. ATUALIZAÇÕES TARDIAS (V4 - PORTAL DE EVENTOS & STORAGE)
+-- ----------------------------------------------------
+-- Para suportar imagens incriveis no Portal de Eventos, execute este bloco no Supabase SQL Editor:
+-- 
+-- 1. Criação das Colunas de Image URL
+-- ALTER TABLE departamentos ADD COLUMN imagem_url text DEFAULT NULL;
+-- ALTER TABLE eventos ADD COLUMN imagem_url text DEFAULT NULL;
+-- 
+-- 2. Configuração do Bucket e Segurança (Storage)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('arquivos_igreja', 'arquivos_igreja', true);
+-- CREATE POLICY "Acesso público aos arquivos" ON storage.objects FOR SELECT TO public USING (bucket_id = 'arquivos_igreja');
+-- CREATE POLICY "Upload para lideres" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'arquivos_igreja');
+-- CREATE POLICY "Update para lideres" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'arquivos_igreja');
+-- CREATE POLICY "Delete para lideres" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'arquivos_igreja');
+
