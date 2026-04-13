@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, CalendarPlus } from "lucide-react";
 import { criarEvento } from "@/app/[igrejaSlug]/actions";
 import { createClient } from "@/utils/supabase/client";
@@ -23,6 +24,7 @@ export default function NovoEventoModal({
   departamentos: Departamento[];
   templatesDox?: any[];
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +49,7 @@ export default function NovoEventoModal({
 
       await criarEvento(formData);
       setOpen(false);
-      window.location.reload();
+      router.refresh();
     } catch (error: any) {
       alert("Erro ao criar evento: " + error.message);
     } finally {

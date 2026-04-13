@@ -10,7 +10,8 @@ import {
   LogOut, 
   Menu,
   X,
-  Globe
+  Globe,
+  ClipboardList
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -80,7 +81,7 @@ export default function MenuSidebar({
         <Link 
           href={`/${slug}/calendario`} 
           onClick={() => setIsOpen(false)}
-          className={`flex items-center px-3 py-2.5 rounded-md font-medium mb-4 transition-colors ${
+          className={`flex items-center px-3 py-2.5 rounded-md font-medium mb-1 transition-colors ${
             paginaAtiva === 'calendario' && !departamentoAtivoId 
               ? 'bg-indigo-50 text-indigo-700' 
               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -88,6 +89,18 @@ export default function MenuSidebar({
         >
           <LayoutDashboard className="w-5 h-5 mr-3 shrink-0" />
           <span className="truncate">Calendário Geral</span>
+        </Link>
+        <Link 
+          href={`/${slug}/escala`} 
+          onClick={() => setIsOpen(false)}
+          className={`flex items-center px-3 py-2.5 rounded-md font-medium mb-4 transition-colors ${
+            paginaAtiva === 'escala' && !departamentoAtivoId 
+              ? 'bg-indigo-50 text-indigo-700' 
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+        >
+          <ClipboardList className="w-5 h-5 mr-3 shrink-0" />
+          <span className="truncate">Escala</span>
         </Link>
 
         {user && (

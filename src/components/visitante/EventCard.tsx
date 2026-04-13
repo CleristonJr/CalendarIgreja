@@ -1,17 +1,17 @@
 import React from 'react';
-import Link from 'next/link';
 import { Pencil } from 'lucide-react';
 
 interface EventCardProps {
   evento: any;
   onOpenDoxologia?: () => void;
   onOpenEscalados?: () => void;
+  onEdit?: () => void;
   isVisitor?: boolean;
   canEdit?: boolean;
   slug?: string;
 }
 
-export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, isVisitor = false, canEdit = false, slug = '' }: EventCardProps) {
+export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, onEdit, isVisitor = false, canEdit = false, slug = '' }: EventCardProps) {
   // Extrai Informações de Data Formatada
   const dateObj = new Date(evento.start || new Date());
 
@@ -27,9 +27,6 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, is
   // Cores dinâmicas para o gradiente de fallback caso não tenha imagem_url
   const hexCor = evento.backgroundColor || '#3b82f6';
 
-  // Imagem mockada e tratamento
-  // Na próxima etapa amarraremos isso ao `evento.imagem_url` no BD. 
-  // O Supabase Image Url vem direto das chamadas ou podemos checar `evento.extendedProps.imagem_url`
   const imagemUrl = evento.extendedProps?.imagem_url;
 
   return (
@@ -58,14 +55,15 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, is
 
       {/* BLOCO DA DIREITA (CONTEÚDO) */}
       <div className="flex-1 p-6 md:p-8 flex flex-col justify-between relative">
-        {canEdit && (
-          <Link
-            href={`/${slug}/calendario?editId=${evento.id}`}
+        {canEdit && onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
             title="Editar Evento"
             className="absolute top-4 right-4 md:top-6 md:right-6 p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors z-10"
           >
             <Pencil className="w-5 h-5" />
-          </Link>
+          </button>
         )}
         <div className="space-y-4">
 

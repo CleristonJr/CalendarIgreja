@@ -196,3 +196,25 @@ export async function deletarTemplateDoxologia(formData: FormData) {
   
   revalidatePath(`/${slug}/configuracoes`)
 }
+
+// ==========================================
+// LOGO DA IGREJA
+// ==========================================
+
+export async function atualizarLogoIgreja(formData: FormData) {
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+  const logo_url = formData.get('logo_url') as string | null
+
+  if (!igreja_id) throw new Error("Dados incompletos.")
+
+  const supabase = await verificarPermissaoLocal(igreja_id)
+
+  const { error } = await supabase.from('igrejas').update({ logo_url }).eq('id', igreja_id)
+
+  if (error) throw new Error("Erro ao atualizar logo: " + error.message)
+  
+  revalidatePath(`/${slug}/configuracoes`)
+  revalidatePath(`/${slug}`)
+}
+

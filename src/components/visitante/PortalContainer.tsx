@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import EventosSidebar from './EventosSidebar';
 import EventCard from './EventCard';
-import { X } from 'lucide-react';
+import { X, Pencil, Clock, Tag, Users, Plus, Trash2, Repeat, CalendarCheck, Phone, User as UserIcon } from 'lucide-react';
+import { editarEvento } from '@/app/[igrejaSlug]/actions';
+import DoxologiaEditor from '@/components/DoxologiaEditor';
 
 interface PortalContainerProps {
   igreja: any;
@@ -11,9 +14,11 @@ interface PortalContainerProps {
   eventos: any[];
   user: any;
   slug: string;
+  templatesDox?: any[];
 }
 
-export default function PortalContainer({ igreja, departamentos, eventos, user, slug }: PortalContainerProps) {
+export default function PortalContainer({ igreja, departamentos, eventos, user, slug, templatesDox = [] }: PortalContainerProps) {
+  const router = useRouter();
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [departamentosSelecionados, setDepartamentosSelecionados] = useState<string[]>([]);
   
@@ -24,6 +29,17 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   const [popupEscaladosOpen, setPopupEscaladosOpen] = useState(false);
   const [eventoParaEscalados, setEventoParaEscalados] = useState<any>(null);
 
+  // Estado do MODAL DE EDIÇÃO INLINE
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingEvento, setEditingEvento] = useState<any>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [modoEdicao, setModoEdicao] = useState<'single' | 'future'>('single');
+
+  // Estado para convidados na edição
+  const [convidadosList, setConvidadosList] = useState<any[]>([]);
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+
   // Toggle Checkboxes da Sidebar
   const toggleDepartamento = (id: string) => {
     setDepartamentosSelecionados(prev => 
@@ -33,17 +49,91 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
 
   // Filtragem
   const eventosFiltrados = eventos.filter((evento) => {
-    // Se nenhum checkbox selecionado, exibe todos
     if (departamentosSelecionados.length === 0) return true;
-    
-    // Verifica se o evento tem esse departamento (no nosso modelo o extendedProps.departamento_id segura isso)
     return departamentosSelecionados.includes(evento.extendedProps.departamento_id);
   });
+
+  // Abrir modal de edição inline
+  const openEditModal = (evento: any) => {
+    setEditingEvento(evento);
+    setConvidadosList(evento.extendedProps?.convidados || []);
+    setModoEdicao('single');
+    setGuestName('');
+    setGuestPhone('');
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditingEvento(null);
+    setModoEdicao('single');
+  };
+
+  // Funções de Convidados
+  const handleAddGuest = () => {
+    if (!guestName.trim()) return;
+    const isAnsiao = user?.role === 'ansiao' || user?.role === 'superadmin';
+    let myDeptName = departamentos?.find(d => d.id === user?.departamento_id)?.nome;
+    if (!myDeptName) {
+      if (isAnsiao && editingEvento?.extendedProps?.departamento_nome) {
+        myDeptName = editingEvento.extendedProps.departamento_nome;
+      } else {
+        myDeptName = 'Geral';
+      }
+    }
+    setConvidadosList(prev => [...prev, { nome: guestName.trim(), telefone: guestPhone.trim(), departamento_nome: myDeptName }]);
+    setGuestName('');
+    setGuestPhone('');
+  };
+
+  const handleRemoveGuest = (index: number) => {
+    setConvidadosList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toDateTimeLocal = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const ten = (i: number) => (i < 10 ? '0' : '') + i;
+    return `${date.getFullYear()}-${ten(date.getMonth() + 1)}-${ten(date.getDate())}T${ten(date.getHours())}:${ten(date.getMinutes())}`;
+  };
+
+  // Submit de edição
+  async function handleEditSubmit(formData: FormData) {
+    setEditLoading(true);
+    formData.append('convidados_json', JSON.stringify(convidadosList));
+    formData.append('modo_edicao', modoEdicao);
+
+    try {
+      await editarEvento(formData);
+      closeEditModal();
+      router.refresh();
+    } catch (err: any) {
+      alert("Erro ao editar: " + err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
+  // Agrupamento de convidados
+  const groupGuestsByDept = (list: any[], fallbackOrg: string) => {
+    const grouped: Record<string, any[]> = {};
+    list.forEach(conv => {
+      const dept = conv.departamento_nome || fallbackOrg || 'Geral';
+      if (!grouped[dept]) grouped[dept] = [];
+      grouped[dept].push(conv);
+    });
+    return grouped;
+  };
+
+  // Permissão de edição sobre o evento sendo editado
+  const isAnsiao = user?.role === 'ansiao' || user?.role === 'superadmin';
+  const isOrganizadorEdit = editingEvento && (isAnsiao || (user?.role === 'lider' && user?.departamento_id === editingEvento?.extendedProps?.departamento_id));
+  const isColaboradorEdit = editingEvento && user?.role === 'lider' && user?.departamento_id && (editingEvento?.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-[#f8fafc] text-slate-900 overflow-hidden font-sans">
       <EventosSidebar 
-        igreja={{ nome: igreja.nome, slug: slug }}
+        igreja={{ nome: igreja.nome, slug: slug, logo_url: igreja.logo_url || null }}
         departamentos={departamentos}
         user={user}
         departamentosSelecionados={departamentosSelecionados}
@@ -68,8 +158,8 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
             </div>
           ) : (
             eventosFiltrados.map((evento) => {
-              const isAnsiao = user?.role === 'ansiao' || user?.role === 'superadmin';
-              const isOrganizador = isAnsiao || (user?.role === 'lider' && user?.departamento_id === evento.extendedProps?.departamento_id);
+              const isAnsiaoCheck = user?.role === 'ansiao' || user?.role === 'superadmin';
+              const isOrganizador = isAnsiaoCheck || (user?.role === 'lider' && user?.departamento_id === evento.extendedProps?.departamento_id);
               const isColaborador = user?.role === 'lider' && user?.departamento_id && (evento.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
               const canEdit = isOrganizador || Boolean(isColaborador);
 
@@ -85,6 +175,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                     setEventoParaEscalados(evento);
                     setPopupEscaladosOpen(true);
                   }}
+                  onEdit={() => openEditModal(evento)}
                   isVisitor={!user}
                   canEdit={canEdit}
                   slug={slug}
@@ -168,6 +259,193 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE EDIÇÃO INLINE */}
+      {editModalOpen && editingEvento && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div className="h-3 w-full shrink-0" style={{ backgroundColor: editingEvento.backgroundColor || '#4f46e5' }}></div>
+            
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0 bg-white">
+              <h2 className="text-xl font-bold flex items-center text-slate-800 tracking-tight">
+                <Pencil className="w-5 h-5 mr-2 text-indigo-600" /> Edição de Evento
+              </h2>
+              <button disabled={editLoading} onClick={closeEditModal} className="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-5">
+              <form action={handleEditSubmit} id="formEditPortal" className="space-y-4">
+                <input type="hidden" name="evento_id" value={editingEvento.id} />
+                <input type="hidden" name="slug" value={slug} />
+
+                {!isOrganizadorEdit && isColaboradorEdit && (
+                  <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm mb-4 border border-blue-100">
+                    <strong>Você é um Colaborador deste evento.</strong><br/>
+                    Seus poderes de edição se limitam ao preenchimento da Lista de Convidados.
+                  </div>
+                )}
+
+                {/* Campos do EVENTO GERAL */}
+                <div className="p-3 border border-slate-200 rounded-lg bg-slate-50 space-y-3">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">Título do Evento *</label>
+                    <input type="text" name="titulo" defaultValue={editingEvento.title} required 
+                      disabled={!isOrganizadorEdit}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-indigo-600 bg-white disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Início *</label>
+                      <input type="datetime-local" name="data_inicio" defaultValue={toDateTimeLocal(editingEvento.start)} required 
+                        disabled={!isOrganizadorEdit}
+                        className="w-full text-sm border border-slate-300 rounded-lg p-1.5 outline-none bg-white disabled:bg-slate-100 disabled:text-slate-400" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Término *</label>
+                      <input type="datetime-local" name="data_fim" defaultValue={editingEvento.end ? toDateTimeLocal(editingEvento.end) : ''} required 
+                        disabled={!isOrganizadorEdit}
+                        className="w-full text-sm border border-slate-300 rounded-lg p-1.5 outline-none bg-white disabled:bg-slate-100 disabled:text-slate-400" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Dept. Organizador</label>
+                    <select name="departamento_id" defaultValue={editingEvento.extendedProps?.departamento_id || ""}
+                      disabled={!isAnsiao} 
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2 outline-none disabled:bg-slate-100 disabled:text-slate-400">
+                      <option value="">Geral</option>
+                      {departamentos.map(d => <option key={d.id} value={d.id}>{d.nome}</option>)}
+                    </select>
+                  </div>
+
+                  {departamentos.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Colaboradores</label>
+                      <div className="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto p-2 border border-slate-300 rounded-lg bg-white opacity-80"
+                           style={{ pointerEvents: !isOrganizadorEdit ? 'none' : 'auto' }}>
+                        {departamentos.map(d => (
+                          <label key={d.id} className="flex items-center space-x-1.5 text-xs text-slate-700">
+                            <input type="checkbox" name="colaboradores_ids" value={d.id} 
+                              defaultChecked={(editingEvento.extendedProps?.colaboradores_ids || []).includes(d.id)}
+                              disabled={!isOrganizadorEdit}
+                              className="rounded" />
+                            <span className="truncate">{d.nome}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Descrição</label>
+                    <textarea name="descricao" rows={2} defaultValue={editingEvento.extendedProps?.descricao || ""} 
+                      disabled={!isOrganizadorEdit}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2 resize-none bg-white disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+                </div>
+
+                {/* DOXOLOGIA EDITOR */}
+                {isOrganizadorEdit && (
+                  <DoxologiaEditor 
+                    templates={templatesDox || []} 
+                    doxologiaInicial={editingEvento.extendedProps?.doxologia_json || []}
+                  />
+                )}
+
+                {/* GERENCIADOR DE CONVIDADOS */}
+                <div className="p-3 border border-indigo-200 rounded-lg bg-indigo-50/50 space-y-3 mt-4">
+                  <h4 className="text-sm font-bold text-indigo-900 border-b border-indigo-100 pb-1 mb-2 flex items-center">
+                    <Users className="w-4 h-4 mr-2" /> Gerenciar Lista de Convidados
+                  </h4>
+                  
+                  <div className="bg-white p-3 rounded border border-indigo-100 shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-indigo-800 mb-1">Novo Nome</label>
+                        <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)}
+                          placeholder="Ex: Ir. João Silva"
+                          className="w-full text-sm border border-indigo-200 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-indigo-800 mb-1">Telefone (Opcional)</label>
+                        <input type="text" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)}
+                          placeholder="(11) 99999-9999"
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddGuest(); } }}
+                          className="w-full text-sm border border-indigo-200 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 bg-white" />
+                      </div>
+                    </div>
+                    <button type="button" onClick={handleAddGuest} disabled={!guestName.trim()}
+                      className="w-full flex items-center justify-center p-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-sm font-bold rounded transition disabled:opacity-50">
+                      <Plus className="w-4 h-4 mr-1" /> Adicionar à Lista
+                    </button>
+                  </div>
+
+                  {/* Lista de convidados */}
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs font-semibold text-indigo-900 mb-1 uppercase tracking-wider">Na Lista ({convidadosList.length})</p>
+                    {convidadosList.length === 0 && (
+                      <p className="text-xs text-slate-500 font-medium text-center py-2 italic">Nenhum convidado na lista ainda.</p>
+                    )}
+                    {convidadosList.map((conv, idx) => (
+                      <div key={idx} className="flex flex-row items-center justify-between bg-white border border-indigo-100 p-2 rounded shadow-sm">
+                        <div className="flex flex-col flex-1 overflow-hidden mr-2">
+                          <span className="text-sm font-semibold text-slate-800 truncate">{conv.nome}</span>
+                          {conv.telefone && <span className="text-xs text-slate-500 truncate">{conv.telefone}</span>}
+                          {conv.departamento_nome && <span className="text-[10px] text-indigo-600 font-bold">{conv.departamento_nome}</span>}
+                        </div>
+                        <button type="button" onClick={() => handleRemoveGuest(idx)} title="Remover"
+                           className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded transition shrink-0">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Escopo para Recorrentes */}
+                {editingEvento.extendedProps?.recorrencia_id && isOrganizadorEdit && (
+                  <div className="p-3 border border-amber-200 rounded-lg bg-amber-50 space-y-2">
+                    <h4 className="text-sm font-bold text-amber-900 flex items-center">
+                      <Repeat className="w-4 h-4 mr-2" /> Evento Recorrente — Escopo
+                    </h4>
+                    <div className="space-y-1.5">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="scope_ui" checked={modoEdicao === 'single'} onChange={() => setModoEdicao('single')} className="text-amber-600" />
+                        <span className="text-sm text-amber-900">Somente este evento</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="scope_ui" checked={modoEdicao === 'future'} onChange={() => setModoEdicao('future')} className="text-amber-600" />
+                        <span className="text-sm text-amber-900">Este e todos os futuros da série</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
+              <button onClick={closeEditModal} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition text-sm">
+                Cancelar
+              </button>
+              <button 
+                disabled={editLoading}
+                form="formEditPortal" 
+                type="submit" 
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition shadow-sm disabled:opacity-50 flex items-center"
+              >
+                {editLoading ? 'Salvando...' : 'Salvar Tudo'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}

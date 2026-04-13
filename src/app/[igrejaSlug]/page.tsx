@@ -74,6 +74,13 @@ export default async function PortalEventosPage(props: Props) {
     .gte("data_inicio", hoje.toISOString()) // Apenas eventos do dia atual em diante
     .order("data_inicio", { ascending: true });
 
+  // 5. Templates de Doxologia (para edição inline)
+  const { data: templatesDox } = await supabase
+    .from("doxologia_templates")
+    .select("*")
+    .eq("igreja_id", igreja.id)
+    .order('created_at', { ascending: false });
+
   // Adapta pro formato comum esperado
   const eventos = eventosDB?.map((e: any) => ({
     id: e.id,
@@ -86,9 +93,11 @@ export default async function PortalEventosPage(props: Props) {
       departamento_id: e.departamento_id,
       departamento_nome: e.departamentos?.nome || 'Geral',
       departamento_imagem_url: e.departamentos?.imagem_url || null,
+      colaboradores_ids: e.colaboradores_ids || [],
       convidados: e.convidados || [],
       imagem_url: e.imagem_url || null, 
       doxologia_json: e.doxologia_json || [],
+      recorrencia_id: e.recorrencia_id || null,
     }
   })) || [];
 
@@ -99,6 +108,7 @@ export default async function PortalEventosPage(props: Props) {
       eventos={eventos}
       user={userData}
       slug={slug}
+      templatesDox={templatesDox || []}
     />
   );
 }

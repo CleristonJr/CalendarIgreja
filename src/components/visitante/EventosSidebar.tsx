@@ -17,7 +17,7 @@ interface Dept {
 }
 
 interface EventosSidebarProps {
-  igreja: { nome: string, slug: string };
+  igreja: { nome: string, slug: string, logo_url?: string | null };
   departamentos: Dept[];
   user: any | null;
   // Estado e Controle dos Checkboxes de Filtro
@@ -41,18 +41,24 @@ export default function EventosSidebar({
   const SidebarContent = () => (
     <>
       <div className="h-20 shrink-0 flex items-center px-4 md:px-6">
-        <img
-          src="https://e7.pngegg.com/pngimages/884/302/png-clipart-taunton-seventh-day-adventist-church-christian-church-sasebo-seventh-day-adventist-church-church-angle-christianity-thumbnail.png"
-          alt="Logo IASD"
-          className="w-10 h-10 mr-3 shrink-0 object-contain"
-          onError={(e) => { e.currentTarget.style.display = 'none' }} // fallback smooth
-        />
-        <div className="flex flex-col">
-          <span className="font-bold text-sm text-[#003056] uppercase tracking-tight leading-tight">
-            Igreja Adventista<br />do Sétimo Dia®
-          </span>
-          <span className="text-xs text-slate-500 font-medium truncate mt-0.5" title={igreja.nome}>
+        {igreja.logo_url ? (
+          <img
+            src={igreja.logo_url}
+            alt={`Logo ${igreja.nome}`}
+            className="w-10 h-10 mr-3 shrink-0 object-contain rounded-lg"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
+        ) : (
+          <div className="w-10 h-10 mr-3 shrink-0 bg-indigo-50 rounded-lg flex items-center justify-center">
+            <Building className="w-5 h-5 text-indigo-600" />
+          </div>
+        )}
+        <div className="flex flex-col overflow-hidden">
+          <span className="font-bold text-sm text-slate-800 uppercase tracking-tight leading-tight truncate" title={igreja.nome}>
             {igreja.nome}
+          </span>
+          <span className="text-xs text-slate-500 font-medium mt-0.5">
+            Portal de Eventos
           </span>
         </div>
         <button onClick={() => setIsOpen(false)} className="ml-auto md:hidden p-1 text-slate-400 hover:text-slate-600 rounded">

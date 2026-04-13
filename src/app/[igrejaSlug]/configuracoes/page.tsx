@@ -6,6 +6,7 @@ import { adicionarDepartamento, deletarDepartamento, criarMembro, deletarMembro 
 import MenuSidebar from "@/components/MenuSidebar";
 import GerenciadorDepartamentos from "@/components/GerenciadorDepartamentos";
 import GerenciadorDoxologiaTemplates from "@/components/GerenciadorDoxologiaTemplates";
+import GerenciadorLogo from "@/components/GerenciadorLogo";
 
 // Paleta de Cores com base na indentidade Adventista
 const PALETA_CORES = [
@@ -89,6 +90,11 @@ export default async function ConfiguracoesIgreja({
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full pb-10">
           <p className="text-slate-500 mb-8 mt-2">Gestão local de cores, departamentos e membros da equipe.</p>
+
+         <GerenciadorLogo 
+           igreja={igreja}
+           slug={slug}
+         />
 
        <GerenciadorDepartamentos 
           igreja={igreja} 

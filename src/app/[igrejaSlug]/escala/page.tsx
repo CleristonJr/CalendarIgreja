@@ -1,36 +1,29 @@
-import { Calendar as CalendarIcon, Users, LayoutDashboard, Settings, LogOut, Circle, Building, AlertTriangle, ClipboardList } from "lucide-react";
-import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
-import Calendario from "@/components/Calendario";
-import NovoEventoModal from "@/components/NovoEventoModal";
 import MenuSidebar from "@/components/MenuSidebar";
+import EscalaContainer from "@/components/EscalaContainer";
+import { AlertTriangle } from "lucide-react";
 
 export const revalidate = 0;
 
 interface Props {
   params: Promise<{ igrejaSlug: string }>
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function IgrejaDashboard(props: Props) {
+export default async function EscalaPage(props: Props) {
   const params = await props.params;
-  const searchParams = props.searchParams ? await props.searchParams : {};
   const slug = params.igrejaSlug;
-  const editId = searchParams.editId as string | undefined;
 
   const supabase = await createClient();
 
-  // 1. Buscando a Igreja a partir do SLUG na URL
+  // 1. Igreja
   const { data: igreja } = await supabase
     .from("igrejas")
     .select("*")
     .eq("slug", slug)
     .single();
 
-  if (!igreja) {
-    return notFound(); // Mostra página 404 se o slug não existir
-  }
+  if (!igreja) return notFound();
 
   if (!igreja.ativa) {
     return (
@@ -38,75 +31,67 @@ export default async function IgrejaDashboard(props: Props) {
         <h1 className="text-3xl font-bold mb-2">Acesso Suspenso</h1>
         <p className="text-slate-500">O sistema desta igreja está temporariamente desativado.</p>
       </div>
-    )
+    );
   }
 
-  // 2. Buscando o usuário atual para controle de tela
+  // 2. Usuário + Permissões
   const { data: { user } } = await supabase.auth.getUser();
 
   let role = 'visitante';
-  let userDeptId = null;
+  let userDeptId: string | null = null;
 
-  // Muro de Segurança e Definições de Permissão
   if (user) {
     const { data: perfil } = await supabase.from('perfis').select('forcar_troca_senha, role, departamento_id, igreja_id').eq('id', user.id).single();
     if (perfil?.forcar_troca_senha) {
       redirect("/trocar-senha");
     }
-    // Só concede permissões se o perfil pertencer A ESTA IGREJA
     if (perfil?.igreja_id === igreja.id) {
       role = perfil?.role || 'visitante';
       userDeptId = perfil?.departamento_id || null;
     }
-    // Se for superadmin, tem acesso total em qualquer igreja
     if (perfil?.role === 'superadmin') {
       role = 'superadmin';
     }
   }
 
-  // Muro de Segurança Secundário - Visitantes não acessam a Gestão de Calendário (FullCalendar)
+  // Visitantes não acessam a página de Escala
   if (role === 'visitante') {
     redirect(`/${slug}`);
   }
 
-  // 3. Buscando departamentos restritos A ESTA IGREJA
+  // 3. Departamentos
   const { data: departamentos } = await supabase
     .from("departamentos")
     .select("*")
     .eq("igreja_id", igreja.id)
     .order("created_at", { ascending: true });
 
-  // 4. Buscando os Eventos reais para o Calendário
-  const { data: eventosDB } = await supabase
+  // 4. Eventos: Para ancião/superadmin = todos. Para líder = os do seu departamento (organizador ou colaborador)
+  let eventosQuery = supabase
     .from("eventos")
     .select("*, departamentos(nome, cor_identificacao)")
-    .eq("igreja_id", igreja.id);
-
-  const { data: templatesDox } = await supabase
-    .from("doxologia_templates")
-    .select("*")
     .eq("igreja_id", igreja.id)
-    .order('created_at', { ascending: false });
+    .order("data_inicio", { ascending: true });
 
-  const { data: membrosDaIgreja } = await supabase
-    .from("perfis")
-    .select("id, nome_completo, email, telefone")
-    .eq("igreja_id", igreja.id);
+  if (role === 'lider' && userDeptId) {
+    eventosQuery = eventosQuery.or(`departamento_id.eq.${userDeptId},colaboradores_ids.cs.{${userDeptId}}`);
+  }
 
-  const eventosCalendario = eventosDB?.map((e: any) => ({
+  const { data: eventosDB } = await eventosQuery;
+
+  const eventosFormatados = eventosDB?.map((e: any) => ({
     id: e.id,
     title: e.titulo,
-    start: e.data_inicio ? e.data_inicio.substring(0, 16) : null,
-    end: e.data_fim ? e.data_fim.substring(0, 16) : null,
+    start: e.data_inicio,
+    end: e.data_fim,
     backgroundColor: e.departamentos?.cor_identificacao || '#3b82f6',
     extendedProps: {
       descricao: e.descricao,
       departamento_id: e.departamento_id,
       departamento_nome: e.departamentos?.nome || 'Geral',
-      doxologia_json: e.doxologia_json || [],
       colaboradores_ids: e.colaboradores_ids || [],
       convidados: e.convidados || [],
-      recorrencia_id: e.recorrencia_id || null
+      recorrencia_id: e.recorrencia_id || null,
     }
   })) || [];
 
@@ -117,52 +102,33 @@ export default async function IgrejaDashboard(props: Props) {
         slug={slug} 
         departamentos={departamentos || []} 
         user={user} 
-        paginaAtiva="calendario" 
+        paginaAtiva="escala" 
       />
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
         {/* Topbar */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 pl-14 md:px-8 shrink-0 w-full">
-          <h1 className="text-lg sm:text-xl font-semibold truncate sm:mr-4">Calendário</h1>
-          <div className="flex space-x-3 items-center">
-            <Link
-              href={`/${slug}/escala`}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-md transition flex items-center gap-2"
-            >
-              <ClipboardList className="w-4 h-4" /> Escala
-            </Link>
-            {(role === 'ansiao' || role === 'superadmin') && (
-              <NovoEventoModal
-                igreja_id={igreja.id}
-                slug={slug}
-                departamentos={departamentos || []}
-                templatesDox={templatesDox || []}
-              />
-            )}
-          </div>
+          <h1 className="text-lg sm:text-xl font-semibold truncate sm:mr-4">Escala de Convidados</h1>
         </header>
 
-        {/* Alerta de Inadimplência Opcional */}
+        {/* Alerta de Inadimplência */}
         {igreja.pagamento_pendente && (
           <div className="bg-red-600 text-white px-6 py-3 flex items-center justify-center text-sm font-medium shadow-md w-full relative z-10 shrink-0">
             <AlertTriangle className="w-5 h-5 mr-3 shrink-0" />
             <span>
-              <strong>Aviso Importante:</strong> Identificamos uma fatura pendente. Por favor, regularize o pagamento, pois o sistema poderá ser suspenso a qualquer momento.
+              <strong>Aviso Importante:</strong> Identificamos uma fatura pendente. Por favor, regularize o pagamento.
             </span>
           </div>
         )}
 
-        {/* Calendar Area */}
+        {/* Escala Content */}
         <div className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50">
-          <Calendario
-            eventos={eventosCalendario}
-            isReadOnly={!user}
+          <EscalaContainer
+            eventos={eventosFormatados}
+            departamentos={departamentos || []}
+            slug={slug}
             userRole={role}
             userDeptId={userDeptId}
-            slug={slug}
-            departamentos={departamentos || []}
-            startEditEventoId={editId}
           />
         </div>
       </main>
