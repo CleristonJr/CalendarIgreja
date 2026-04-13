@@ -24,7 +24,7 @@ export default async function GestaoPage({
     redirect("/login");
   }
 
-  // Muro de Segurança: Impedir que Ansiãos e Líderes entrem aqui
+  // Muro de Segurança: Impedir que Anciãos e Líderes entrem aqui
   const { data: perfil } = await supabase
     .from('perfis')
     .select('role, nome_completo')
@@ -163,7 +163,7 @@ export default async function GestaoPage({
                     <input
                       name="q"
                       defaultValue={termoBusca}
-                      placeholder={view === 'igrejas' ? "Buscar por nome ou slug..." : "Buscar pelo nome do Ansião..."}
+                      placeholder={view === 'igrejas' ? "Buscar por nome ou slug..." : "Buscar pelo nome do Ancião..."}
                       className="w-full text-sm py-1.5 px-3 border border-slate-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
                     />
                     {termoBusca && (
@@ -264,7 +264,7 @@ export default async function GestaoPage({
                   ansioes.length === 0 ? (
                     <div className="p-8 text-center flex flex-col items-center text-slate-400">
                       <UserCog className="w-10 h-10 mb-3 text-slate-200" />
-                      Nenhum Ansião cadastrado e validado no sistema.
+                      Nenhum Ancião cadastrado e validado no sistema.
                     </div>
                   ) : (
                     <table className="w-full text-left border-collapse">
@@ -368,3 +368,4 @@ export default async function GestaoPage({
     </div>
   );
 }
+

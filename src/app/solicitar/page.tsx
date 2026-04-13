@@ -45,7 +45,7 @@ export default function SolicitarIgreja() {
           </div>
           <h2 className="text-2xl font-black text-slate-800 mb-2">Solicitação Enviada!</h2>
           <p className="text-slate-600 mb-8 leading-relaxed">
-            Sua conta de Ansião foi reservada! Recebemos a ficha da sua igreja e nossa equipe de administração já está analisando para aprovação.
+            Sua conta de Ancião foi reservada! Recebemos a ficha da sua igreja e nossa equipe de administração já está analisando para aprovação.
             Você será notificado e tentará logar em breve.
           </p>
           <Link href="/" className="inline-block w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition">
@@ -91,7 +91,7 @@ export default function SolicitarIgreja() {
           <form action={handleAction} className="space-y-6">
             {/* Bloco Conta */}
             <div className="space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">1. Sua Conta Permanente (Ansião)</h3>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">1. Sua Conta Permanente (Ancião)</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -160,3 +160,4 @@ export default function SolicitarIgreja() {
     </div>
   );
 }
+

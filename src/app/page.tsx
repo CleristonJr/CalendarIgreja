@@ -47,7 +47,7 @@ export default async function SaasLandingPage() {
             href="/login"
             className="w-full flex items-center justify-center p-3 sm:py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition duration-200"
           >
-            Fazer Login (Ansiãos/Líderes)
+            Fazer Login (Anciãos/Líderes)
           </Link>
           <p className="text-center text-sm text-slate-500">
             Sua organização ainda não está no servidor?{" "}
@@ -84,3 +84,4 @@ export default async function SaasLandingPage() {
     </div>
   );
 }
+

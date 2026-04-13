@@ -86,22 +86,22 @@ export default async function GestaoIgrejaDetalhes({
             </div>
           </div>
 
-          {/* Gestão de Ansiãos */}
+          {/* Gestão de Anciãos */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <h2 className="font-bold text-slate-800 flex items-center">
                 <UserCheck className="w-5 h-5 mr-2 text-indigo-600" />
-                Ansiãos desta Igreja
+                Anciãos desta Igreja
               </h2>
               <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-indigo-700 transition">
-                + Associar Ansião
+                + Associar Ancião
               </button>
             </div>
             <div className="p-0">
               {ansiaos?.length === 0 ? (
                 <div className="p-8 text-center text-slate-500 flex flex-col items-center">
                   <ShieldAlert className="w-10 h-10 text-orange-400 mb-2" />
-                  Nenhum ansião associado. Essa igreja está sem administrador local!
+                  Nenhum ancião associado. Essa igreja está sem administrador local!
                 </div>
               ) : (
                 <table className="w-full text-left border-collapse">

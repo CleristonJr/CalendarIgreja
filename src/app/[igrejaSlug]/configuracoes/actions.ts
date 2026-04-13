@@ -12,9 +12,9 @@ async function verificarPermissaoLocal(igreja_id: string) {
   const { data: perfil } = await supabase.from('perfis').select('role, igreja_id').eq('id', user.id).single()
   
   if (perfil?.role === 'superadmin') return supabase; // Dono da plataforma pode tudo
-  if (perfil?.role === 'ansiao' && perfil?.igreja_id === igreja_id) return supabase; // Ansião gerenciando a própria igreja
+  if (perfil?.role === 'ansiao' && perfil?.igreja_id === igreja_id) return supabase; // Ancião gerenciando a própria igreja
   
-  throw new Error("Acesso negado: Você não tem permissão de Ansião para esta organização.")
+  throw new Error("Acesso negado: Você não tem permissão de Ancião para esta organização.")
 }
 
 export async function adicionarDepartamento(formData: FormData) {

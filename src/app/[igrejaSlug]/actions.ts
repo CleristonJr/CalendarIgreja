@@ -29,10 +29,10 @@ export async function criarEvento(formData: FormData) {
   const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
 
   if (!perfil || (perfil.role !== 'ansiao' && perfil.role !== 'superadmin')) {
-    throw new Error("Acesso Negado: Apenas o Ansião tem permissão para criar eventos.")
+    throw new Error("Acesso Negado: Apenas o Ancião tem permissão para criar eventos.")
   }
 
-  // Ansião só pode criar evento na SUA igreja
+  // Ancião só pode criar evento na SUA igreja
   if (perfil.role === 'ansiao' && perfil.igreja_id !== igreja_id) {
     throw new Error("Acesso Negado: Você só pode criar eventos na sua própria igreja.")
   }
@@ -239,7 +239,7 @@ export async function deletarEvento(formData: FormData) {
   const isOrganizador = isAnsiao || (perfil.role === 'lider' && perfil.departamento_id === evento_original.departamento_id && perfil.departamento_id !== null);
 
   if (!isOrganizador) {
-    throw new Error("Acesso Negado: Apenas o Organizador ou Ansião podem excluir o evento.")
+    throw new Error("Acesso Negado: Apenas o Organizador ou Ancião podem excluir o evento.")
   }
 
   if (modo_exclusao === 'future' && evento_original.recorrencia_id) {

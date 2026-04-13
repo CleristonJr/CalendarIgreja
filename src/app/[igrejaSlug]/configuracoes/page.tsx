@@ -46,7 +46,7 @@ export default async function ConfiguracoesIgreja({
       <div className="h-screen w-full flex flex-col items-center justify-center bg-red-50 text-red-900">
         <ShieldCheck className="w-16 h-16 mb-4 text-red-600" />
         <h1 className="text-2xl font-bold mb-2">Acesso Restrito</h1>
-        <p className="text-red-700">Apenas o Ansião desta igreja pode acessar as configurações.</p>
+        <p className="text-red-700">Apenas o Ancião desta igreja pode acessar as configurações.</p>
         <Link href={`/${slug}`} className="mt-6 px-4 py-2 bg-slate-900 text-white rounded">Voltar ao Calendário</Link>
       </div>
     );
@@ -55,7 +55,7 @@ export default async function ConfiguracoesIgreja({
   // Buscando departamentos desta igreja
   const { data: departamentos } = await supabase.from("departamentos").select("*").eq("igreja_id", igreja.id).order('created_at');
 
-  // Buscando Membros (Líderes, Ansiãos) desta igreja
+  // Buscando Membros (Líderes, Anciãos) desta igreja
   const { data: membros } = await supabase
     .from("perfis")
     .select("*, departamentos(nome, cor_identificacao)")
@@ -185,7 +185,7 @@ export default async function ConfiguracoesIgreja({
                         <div>
                           <p className="font-bold text-slate-800 text-sm leading-tight flex items-center gap-2">
                             {m.nome_completo || "Usuário"}
-                            {m.role === 'ansiao' && <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-bold">ANSIÃO</span>}
+                            {m.role === 'ansiao' && <span className="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded-full font-bold">ANCIÃO</span>}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5">{m.id.substring(0, 8)}... • Acesso validado</p>
                         </div>

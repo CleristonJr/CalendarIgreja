@@ -84,10 +84,11 @@ export default async function LoginPage({
 
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500">
-            Apenas Ansiãos e Líderes podem acessar o painel.
+            Apenas Anciãos e Líderes podem acessar o painel.
           </p>
         </div>
       </div>
     </div>
   );
 }
+

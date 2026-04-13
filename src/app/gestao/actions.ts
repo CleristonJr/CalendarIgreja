@@ -118,7 +118,7 @@ export async function aprovarSolicitacao(solicitacaoId: string) {
 
   if (errIg || !novaIgreja) throw new Error("Erro na consolidação da igreja: " + (errIg?.message || "Desconhecido"))
 
-  // 3. Efetiva o dono da ficha para se tornar Ansião e atrela-o a Igreja dele.
+  // 3. Efetiva o dono da ficha para se tornar Ancião e atrela-o a Igreja dele.
   await supabase.from('perfis').update({ role: 'ansiao', igreja_id: novaIgreja.id }).eq('id', sol.usuario_id)
 
   // 4. Arquiva a solicitação como Aprovada
