@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Users, Plus, Trash2, Save, AlertTriangle, Calendar, Clock, Tag } from 'lucide-react';
 import { editarEvento } from '@/app/[igrejaSlug]/actions';
+import EscalaPdfExport from '@/components/EscalaPdfExport';
 
 interface EscalaContainerProps {
   eventos: any[];
@@ -164,25 +165,34 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
           </p>
         </div>
 
-        {/* Navegação de Mês */}
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl shadow-sm px-1 py-1">
-          <button 
-            onClick={irParaMesAnterior}
-            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="px-4 py-1.5 min-w-[160px] text-center">
-            <span className="font-bold text-slate-800 text-sm uppercase tracking-wide">
-              {mesesPtBr[mesAtual]} {anoAtual}
-            </span>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <EscalaPdfExport
+            departamentos={departamentos}
+            eventosMes={eventosMes}
+            mesAtual={mesAtual}
+            anoAtual={anoAtual}
+          />
+
+          {/* Navegação de Mês */}
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl shadow-sm px-1 py-1">
+            <button 
+              onClick={irParaMesAnterior}
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="px-4 py-1.5 min-w-[160px] text-center">
+              <span className="font-bold text-slate-800 text-sm uppercase tracking-wide">
+                {mesesPtBr[mesAtual]} {anoAtual}
+              </span>
+            </div>
+            <button 
+              onClick={irParaProximoMes}
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
-          <button 
-            onClick={irParaProximoMes}
-            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
         </div>
       </div>
 
