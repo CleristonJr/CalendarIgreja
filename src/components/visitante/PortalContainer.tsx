@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import EventosSidebar from './EventosSidebar';
 import EventCard from './EventCard';
-import { X, Pencil, Clock, Tag, Users, Plus, Trash2, Repeat, CalendarCheck, Phone, User as UserIcon } from 'lucide-react';
+import { X, Pencil, Users, Plus, Trash2, Repeat, ChevronLeft, ChevronRight } from 'lucide-react';
 import { editarEvento } from '@/app/[igrejaSlug]/actions';
 import DoxologiaEditor from '@/components/DoxologiaEditor';
 
@@ -40,6 +40,13 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
 
+  // Estados para Slideshow
+  const [slideshowActive, setSlideshowActive] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
+  const slideTimer = useRef<NodeJS.Timeout | null>(null);
+  const slideshowRef = useRef<HTMLDivElement>(null);
+
   // Toggle Checkboxes da Sidebar
   const toggleDepartamento = (id: string) => {
     setDepartamentosSelecionados(prev => 
@@ -69,6 +76,39 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
     setModoEdicao('single');
   };
 
+  // Função para resetar timer de inatividade
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    inactivityTimer.current = setTimeout(() => {
+      if (!user && eventosFiltrados.length > 0) setSlideshowActive(true);
+    }, 60000); // 1 minuto
+  }, [user, eventosFiltrados.length]);
+
+  // Função para iniciar timer de avanço de slide
+  const startSlideTimer = useCallback(() => {
+    if (slideTimer.current) clearInterval(slideTimer.current);
+    slideTimer.current = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % eventosFiltrados.length);
+    }, 5000); // 5 segundos
+  }, [eventosFiltrados.length]);
+
+  // Função para parar slideshow
+  const stopSlideshow = () => {
+    setSlideshowActive(false);
+    if (slideTimer.current) clearInterval(slideTimer.current);
+    if (document.fullscreenElement) document.exitFullscreen();
+    resetInactivityTimer();
+  };
+
+  // Navegação manual
+  const nextSlide = () => {
+    setCurrentSlide(prev => (prev + 1) % eventosFiltrados.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(prev => (prev - 1 + eventosFiltrados.length) % eventosFiltrados.length);
+  };
+
   // Funções de Convidados
   const handleAddGuest = () => {
     if (!guestName.trim()) return;
@@ -96,6 +136,34 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
     const ten = (i: number) => (i < 10 ? '0' : '') + i;
     return `${date.getFullYear()}-${ten(date.getMonth() + 1)}-${ten(date.getDate())}T${ten(date.getHours())}:${ten(date.getMinutes())}`;
   };
+
+  // useEffect para timers e event listeners
+  useEffect(() => {
+    if (!user) {
+      resetInactivityTimer();
+      const handleActivity = () => resetInactivityTimer();
+      window.addEventListener('mousemove', handleActivity);
+      window.addEventListener('click', handleActivity);
+      window.addEventListener('keydown', handleActivity);
+      return () => {
+        window.removeEventListener('mousemove', handleActivity);
+        window.removeEventListener('click', handleActivity);
+        window.removeEventListener('keydown', handleActivity);
+        if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+        if (slideTimer.current) clearInterval(slideTimer.current);
+      };
+    }
+  }, [user, resetInactivityTimer]);
+
+  // useEffect para slideshow ativo
+  useEffect(() => {
+    if (slideshowActive) {
+      startSlideTimer();
+      if (slideshowRef.current) slideshowRef.current.requestFullscreen();
+    } else {
+      if (slideTimer.current) clearInterval(slideTimer.current);
+    }
+  }, [slideshowActive, startSlideTimer]);
 
   // Submit de edição
   async function handleEditSubmit(formData: FormData) {
@@ -129,6 +197,37 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   const isAnsiao = user?.role === 'ansiao' || user?.role === 'superadmin';
   const isOrganizadorEdit = editingEvento && (isAnsiao || (user?.role === 'lider' && user?.departamento_id === editingEvento?.extendedProps?.departamento_id));
   const isColaboradorEdit = editingEvento && user?.role === 'lider' && user?.departamento_id && (editingEvento?.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
+
+  // Renderização condicional para slideshow
+  if (slideshowActive && eventosFiltrados.length > 0) {
+    const eventoAtual = eventosFiltrados[currentSlide];
+    return (
+      <div ref={slideshowRef} className="fixed inset-0 bg-black z-[200] flex items-center justify-center" onClick={stopSlideshow}>
+        <div className="relative w-full h-full flex items-center justify-center p-8">
+          <button onClick={prevSlide} className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-4 text-white">
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          <div className="max-w-4xl w-full">
+            <EventCard 
+              evento={eventoAtual} 
+              onOpenDoxologia={() => {}} // Desabilitado no slideshow
+              onOpenEscalados={() => {}} // Desabilitado no slideshow
+              onEdit={() => {}} // Desabilitado no slideshow
+              isVisitor={true}
+              canEdit={false}
+              slug={slug}
+            />
+          </div>
+          <button onClick={nextSlide} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-4 text-white">
+            <ChevronRight className="w-8 h-8" />
+          </button>
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
+            {currentSlide + 1} / {eventosFiltrados.length}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-[#f8fafc] text-slate-900 overflow-hidden font-sans">
