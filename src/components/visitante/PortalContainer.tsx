@@ -215,12 +215,12 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   if (slideshowActive && eventosFiltrados.length > 0) {
     const eventoAtual = eventosFiltrados[currentSlide];
     return (
-      <div ref={slideshowRef} className="fixed inset-0 bg-black z-[200] flex items-center justify-center" onClick={stopSlideshow}>
+      <div ref={slideshowRef} className="fixed inset-0 bg-[#ededed] z-[200] flex items-center justify-center" onClick={stopSlideshow}>
         <div className="relative w-full h-full flex items-center justify-center p-8">
-          <button onClick={prevSlide} className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-4 text-white">
+          <button onClick={prevSlide} className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 text-slate-900 shadow-lg">
             <ChevronLeft className="w-8 h-8" />
           </button>
-          <div className="max-w-4xl w-full">
+          <div className="max-w-[70vw] w-full">
             <EventCard 
               evento={eventoAtual} 
               onOpenDoxologia={() => {}} // Desabilitado no slideshow
@@ -231,10 +231,10 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
               slug={slug}
             />
           </div>
-          <button onClick={nextSlide} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-4 text-white">
+          <button onClick={nextSlide} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 text-slate-900 shadow-lg">
             <ChevronRight className="w-8 h-8" />
           </button>
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-slate-900 text-sm font-semibold">
             {currentSlide + 1} / {eventosFiltrados.length}
           </div>
         </div>
