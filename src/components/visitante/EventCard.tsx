@@ -9,9 +9,10 @@ interface EventCardProps {
   isVisitor?: boolean;
   canEdit?: boolean;
   slug?: string;
+  slideshow?: boolean;
 }
 
-export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, onEdit, isVisitor = false, canEdit = false, slug = '' }: EventCardProps) {
+export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, onEdit, isVisitor = false, canEdit = false, slug = '', slideshow = false }: EventCardProps) {
   // Extrai Informações de Data Formatada
   const dateObj = new Date(evento.start || new Date());
 
@@ -30,7 +31,7 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, on
   const imagemUrl = evento.extendedProps?.imagem_url;
 
   return (
-    <div className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col md:flex-row overflow-hidden group">
+    <div className={`w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col md:flex-row overflow-hidden group ${slideshow ? 'min-w-[70vw]' : ''}`}>
 
       {/* BLOCO DA ESQUERDA (IMAGEM / BANNER) */}
       <div className="md:w-[45%] h-64 md:h-auto min-h-[300px] relative overflow-hidden flex items-center justify-center m-1.5 rounded-[20px]">

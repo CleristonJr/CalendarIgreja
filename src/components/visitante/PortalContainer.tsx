@@ -229,6 +229,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
               isVisitor={true}
               canEdit={false}
               slug={slug}
+              slideshow={true}
             />
           </div>
           <button onClick={nextSlide} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 text-slate-900 shadow-lg">
