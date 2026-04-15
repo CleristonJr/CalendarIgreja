@@ -55,7 +55,20 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   };
 
   // Filtragem
+  const agora = new Date();
+  const mesAtual = agora.getMonth();
+  const anoAtual = agora.getFullYear();
+  const mesProximo = mesAtual === 11 ? 0 : mesAtual + 1;
+  const anoProximo = mesAtual === 11 ? anoAtual + 1 : anoAtual;
+
   const eventosFiltrados = eventos.filter((evento) => {
+    const dataInicio = evento.start ? new Date(evento.start) : null;
+    if (!dataInicio) return false;
+
+    const isMesAtual = dataInicio.getFullYear() === anoAtual && dataInicio.getMonth() === mesAtual;
+    const isMesProximo = dataInicio.getFullYear() === anoProximo && dataInicio.getMonth() === mesProximo;
+    if (!isMesAtual && !isMesProximo) return false;
+
     if (departamentosSelecionados.length === 0) return true;
     return departamentosSelecionados.includes(evento.extendedProps.departamento_id);
   });
