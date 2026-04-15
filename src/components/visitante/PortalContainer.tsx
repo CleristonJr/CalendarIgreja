@@ -220,7 +220,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
           <button onClick={prevSlide} className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-4 text-slate-900 shadow-lg">
             <ChevronLeft className="w-8 h-8" />
           </button>
-          <div className="max-w-[70vw] w-full">
+          <div className="min-w-[70vw] max-w-[70vw] w-full mx-auto">
             <EventCard 
               evento={eventoAtual} 
               onOpenDoxologia={() => {}} // Desabilitado no slideshow
