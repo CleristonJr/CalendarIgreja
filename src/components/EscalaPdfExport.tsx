@@ -23,7 +23,6 @@ type DepartamentoPdf = {
 type DepartamentoComEventos = {
   departamento: DepartamentoPdf;
   eventos: EventoPdf[];
-  grupos: Record<string, EventoPdf[]>;
 };
 
 interface EscalaPdfExportProps {
