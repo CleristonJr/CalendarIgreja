@@ -123,6 +123,7 @@ CREATE POLICY "departamentos_update_manage"
   USING (
     auth_user_role() = 'superadmin'
     OR (auth_user_role() = 'ansiao' AND auth_user_igreja_id() = igreja_id)
+    OR (auth_user_role() = 'lider' AND auth_user_igreja_id() = igreja_id AND id = auth_user_departamento_id())
   );
 
 CREATE POLICY "departamentos_delete_manage"

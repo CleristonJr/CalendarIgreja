@@ -237,8 +237,9 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
 
             const semConvidados = convidadosVisiveis.length === 0;
             const dateInfo = formatarData(evento.start);
-            const deptIdDoEvento = evento.extendedProps?.departamento_id || userDeptId;
-            const equipeDoDept = departamentos.find(d => d.id === deptIdDoEvento)?.equipe_json || [];
+            // Se for líder, usa a equipe do próprio líder. Se for ancião, usa a do organizador.
+            const deptIdDaEquipe = (userRole === 'lider' && userDeptId) ? userDeptId : (evento.extendedProps?.departamento_id || userDeptId);
+            const equipeDoDept = departamentos.find(d => d.id === deptIdDaEquipe)?.equipe_json || [];
 
             return (
               <div key={evento.id} className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all ${semConvidados ? 'border-amber-200' : 'border-slate-200'}`}>
