@@ -229,7 +229,13 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
             const input = getInput(evento.id);
             const isSaving = savingMap[evento.id] || false;
             const isSaved = savedMap[evento.id] || false;
-            const semConvidados = convidados.length === 0;
+            
+            const myDeptName = departamentos?.find(d => d.id === userDeptId)?.nome;
+            const convidadosVisiveis = convidados
+               .map((c: any, originalIndex: number) => ({ ...c, originalIndex }))
+               .filter((c: any) => userRole !== 'lider' || c.departamento_nome === myDeptName);
+
+            const semConvidados = convidadosVisiveis.length === 0;
             const dateInfo = formatarData(evento.start);
             const deptIdDoEvento = evento.extendedProps?.departamento_id || userDeptId;
             const equipeDoDept = departamentos.find(d => d.id === deptIdDoEvento)?.equipe_json || [];
@@ -267,9 +273,9 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                     )}
                     
                     {/* Badge de quantidade */}
-                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${convidados.length > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-400'}`}>
+                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${convidadosVisiveis.length > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-400'}`}>
                       <Users className="w-3 h-3 inline mr-1" />
-                      {convidados.length}
+                      {convidadosVisiveis.length}
                     </div>
 
                     {/* Botão Salvar */}
@@ -341,17 +347,17 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                   </div>
 
                   {/* Lista de Convidados */}
-                  {convidados.length > 0 ? (
+                  {convidadosVisiveis.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {convidados.map((conv: any, idx: number) => (
-                        <div key={idx} className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 group hover:border-red-200 transition">
+                      {convidadosVisiveis.map((conv: any) => (
+                        <div key={conv.originalIndex} className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 group hover:border-red-200 transition">
                           <div className="flex flex-col">
                             <span className="text-sm font-semibold text-slate-700">{conv.nome}</span>
                             {conv.telefone && <span className="text-[10px] text-slate-400">{conv.telefone}</span>}
                           </div>
                           <button
                             type="button"
-                            onClick={() => removeGuest(evento.id, idx)}
+                            onClick={() => removeGuest(evento.id, conv.originalIndex)}
                             className="p-0.5 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                             title="Remover"
                           >
@@ -361,7 +367,7 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic text-center py-2">Nenhum convidado adicionado ainda. Use o campo acima.</p>
+                    <p className="text-xs text-slate-400 italic text-center py-2">Nenhum convidado do seu departamento.</p>
                   )}
                 </div>
               </div>
