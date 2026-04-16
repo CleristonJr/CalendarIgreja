@@ -210,14 +210,14 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
           />
 
           {/* Navegação de Mês */}
-          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl shadow-sm px-1 py-1">
+          <div className="flex items-center justify-between w-full sm:w-auto bg-white border border-slate-200 rounded-xl shadow-sm px-1 py-1">
             <button 
               onClick={irParaMesAnterior}
               className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="px-4 py-1.5 min-w-[160px] text-center">
+            <div className="px-4 py-1.5 flex-1 min-w-[160px] text-center">
               <span className="font-bold text-slate-800 text-sm uppercase tracking-wide">
                 {mesesPtBr[mesAtual]} {anoAtual}
               </span>
@@ -396,7 +396,7 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                           <button
                             type="button"
                             onClick={() => removeGuest(evento.id, conv.originalIndex)}
-                            className="p-0.5 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                            className="p-0.5 text-slate-400 hover:text-red-500 transition"
                             title="Remover"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
