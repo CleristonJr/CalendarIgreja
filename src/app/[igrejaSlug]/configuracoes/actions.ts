@@ -4,17 +4,18 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 
-async function verificarPermissaoLocal(igreja_id: string) {
+async function verificarPermissaoLocal(igreja_id: string, allowLider = false) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Acesso negado: Faça o login.")
 
   const { data: perfil } = await supabase.from('perfis').select('role, igreja_id').eq('id', user.id).single()
   
-  if (perfil?.role === 'superadmin') return supabase; // Dono da plataforma pode tudo
-  if (perfil?.role === 'ansiao' && perfil?.igreja_id === igreja_id) return supabase; // Ancião gerenciando a própria igreja
+  if (perfil?.role === 'superadmin') return { supabase, perfil }; // Dono da plataforma pode tudo
+  if (perfil?.role === 'ansiao' && perfil?.igreja_id === igreja_id) return { supabase, perfil }; // Ancião gerenciando a própria igreja
+  if (allowLider && perfil?.role === 'lider' && perfil?.igreja_id === igreja_id) return { supabase, perfil }; // Líder gerenciando sua equipe
   
-  throw new Error("Acesso negado: Você não tem permissão de Ancião para esta organização.")
+  throw new Error("Acesso negado: Você não tem permissão para esta ação.")
 }
 
 export async function adicionarDepartamento(formData: FormData) {
@@ -26,7 +27,7 @@ export async function adicionarDepartamento(formData: FormData) {
 
   if (!nome || !cor_identificacao || !igreja_id) throw new Error("Dados incompletos.")
   
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   const payload: any = { nome, cor_identificacao, igreja_id }
   if (imagem_url) payload.imagem_url = imagem_url
@@ -49,7 +50,7 @@ export async function editarDepartamento(formData: FormData) {
 
   if (!dept_id || !nome || !cor_identificacao || !igreja_id) throw new Error("Dados incompletos.")
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   const payload: any = { nome, cor_identificacao }
   if (imagem_url) payload.imagem_url = imagem_url
@@ -67,7 +68,7 @@ export async function deletarDepartamento(formData: FormData) {
   const igreja_id = formData.get('igreja_id') as string
   const slug = formData.get('slug') as string
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   await supabase.from('departamentos').delete().eq('id', dept_id)
   
@@ -148,7 +149,7 @@ export async function adicionarTemplateDoxologia(formData: FormData) {
 
   if (!titulo || !igreja_id) throw new Error("Título oblrigatório.")
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   let itens = [];
   try { itens = JSON.parse(itens_json || '[]') } catch(e) {}
@@ -173,7 +174,7 @@ export async function editarTemplateDoxologia(formData: FormData) {
 
   if (!template_id || !titulo || !igreja_id) throw new Error("Dados incompletos.")
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   let itens = [];
   try { itens = JSON.parse(itens_json || '[]') } catch(e) {}
@@ -190,7 +191,7 @@ export async function deletarTemplateDoxologia(formData: FormData) {
   const igreja_id = formData.get('igreja_id') as string
   const slug = formData.get('slug') as string
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   await supabase.from('doxologia_templates').delete().eq('id', template_id)
   
@@ -208,7 +209,7 @@ export async function atualizarLogoIgreja(formData: FormData) {
 
   if (!igreja_id) throw new Error("Dados incompletos.")
 
-  const supabase = await verificarPermissaoLocal(igreja_id)
+  const { supabase } = await verificarPermissaoLocal(igreja_id)
 
   const { error } = await supabase.from('igrejas').update({ logo_url }).eq('id', igreja_id)
 
@@ -216,5 +217,39 @@ export async function atualizarLogoIgreja(formData: FormData) {
   
   revalidatePath(`/${slug}/configuracoes`)
   revalidatePath(`/${slug}`)
+}
+
+// ==========================================
+// EQUIPE DO DEPARTAMENTO
+// ==========================================
+
+export async function atualizarEquipeDepartamento(formData: FormData) {
+  const departamento_id = formData.get('departamento_id') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+  const equipe_json = formData.get('equipe_json') as string
+
+  if (!departamento_id || !igreja_id) throw new Error("Dados incompletos.")
+
+  // Permite que líderes salvem!
+  const { supabase, perfil } = await verificarPermissaoLocal(igreja_id, true)
+  
+  // Se for líder, só pode atualizar o SEU departamento
+  if (perfil.role === 'lider') {
+    const { data: meuPerfil } = await supabase.from('perfis').select('departamento_id').eq('id', (await supabase.auth.getUser()).data.user!.id).single();
+    if (meuPerfil?.departamento_id !== departamento_id) {
+       throw new Error("Acesso negado: Você só pode gerenciar a equipe do seu próprio departamento.")
+    }
+  }
+
+  let equipe = [];
+  try { equipe = JSON.parse(equipe_json || '[]') } catch(e) {}
+
+  const { error } = await supabase.from('departamentos').update({ equipe_json: equipe }).eq('id', departamento_id)
+
+  if (error) throw new Error("Erro ao atualizar equipe: " + error.message)
+
+  revalidatePath(`/${slug}/configuracoes`)
+  revalidatePath(`/${slug}/escala`)
 }
 

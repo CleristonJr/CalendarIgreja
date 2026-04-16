@@ -7,6 +7,7 @@ import MenuSidebar from "@/components/MenuSidebar";
 import GerenciadorDepartamentos from "@/components/GerenciadorDepartamentos";
 import GerenciadorDoxologiaTemplates from "@/components/GerenciadorDoxologiaTemplates";
 import GerenciadorLogo from "@/components/GerenciadorLogo";
+import GerenciadorEquipe from "@/components/GerenciadorEquipe";
 
 // Paleta de Cores com base na indentidade Adventista
 const PALETA_CORES = [
@@ -39,19 +40,21 @@ export default async function ConfiguracoesIgreja({
   const { data: igreja } = await supabase.from("igrejas").select("*").eq("slug", slug).single();
   if (!igreja) return notFound();
 
-  // Validando se é o dono dessa igreja ou superadmin
-  const { data: perfil } = await supabase.from('perfis').select('key:id, role, igreja_id').eq('id', user.id).single();
+  // Validando se é o dono dessa igreja, superadmin, ou líder
+  const { data: perfil } = await supabase.from('perfis').select('key:id, role, igreja_id, departamento_id').eq('id', user.id).single();
 
-  if (perfil?.role !== 'superadmin' && (perfil?.role !== 'ansiao' || perfil?.igreja_id !== igreja.id)) {
+  if (!perfil || (perfil.role !== 'superadmin' && perfil.igreja_id !== igreja.id)) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-red-50 text-red-900">
         <ShieldCheck className="w-16 h-16 mb-4 text-red-600" />
         <h1 className="text-2xl font-bold mb-2">Acesso Restrito</h1>
-        <p className="text-red-700">Apenas o Ancião desta igreja pode acessar as configurações.</p>
+        <p className="text-red-700">Você não tem permissão para acessar esta página.</p>
         <Link href={`/${slug}`} className="mt-6 px-4 py-2 bg-slate-900 text-white rounded">Voltar ao Calendário</Link>
       </div>
     );
   }
+
+  const isLider = perfil.role === 'lider';
 
   // Buscando departamentos desta igreja
   const { data: departamentos } = await supabase.from("departamentos").select("*").eq("igreja_id", igreja.id).order('created_at');
@@ -89,30 +92,42 @@ export default async function ConfiguracoesIgreja({
         </header>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full pb-10">
-          <p className="text-slate-500 mb-8 mt-2">Gestão local de cores, departamentos e membros da equipe.</p>
+          <p className="text-slate-500 mb-8 mt-2">
+            {isLider ? "Gerenciamento da equipe do seu departamento." : "Gestão local de cores, departamentos e membros da equipe."}
+          </p>
 
-         <GerenciadorLogo 
-           igreja={igreja}
-           slug={slug}
-         />
-
-       <GerenciadorDepartamentos 
+        {/* Gerenciamento de Equipe visível para Líder e Ancião */}
+        <GerenciadorEquipe 
           igreja={igreja} 
           slug={slug} 
           departamentos={departamentos || []} 
-          PALETA_CORES={PALETA_CORES} 
+          perfil={perfil} 
         />
 
-        <GerenciadorDoxologiaTemplates
-          igreja={igreja}
-          slug={slug}
-          templates={templates || []}
-        />
+        {!isLider && (
+          <>
+            <GerenciadorLogo 
+              igreja={igreja}
+              slug={slug}
+            />
 
-        {/* ---------------------------------------------------- */}
-        {/* SESSÃO 2: MEMBROS DA EQUIPE (LÍDERES) */}
-        {/* ---------------------------------------------------- */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
+            <GerenciadorDepartamentos 
+              igreja={igreja} 
+              slug={slug} 
+              departamentos={departamentos || []} 
+              PALETA_CORES={PALETA_CORES} 
+            />
+
+            <GerenciadorDoxologiaTemplates
+              igreja={igreja}
+              slug={slug}
+              templates={templates || []}
+            />
+
+            {/* ---------------------------------------------------- */}
+            {/* SESSÃO 2: MEMBROS DA EQUIPE (LÍDERES) */}
+            {/* ---------------------------------------------------- */}
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
           <div className="p-5 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-lg font-bold text-slate-800 flex items-center">
               <Users className="w-5 h-5 mr-2 text-indigo-600" />
@@ -228,6 +243,8 @@ export default async function ConfiguracoesIgreja({
             </div>
           </div>
         </div>
+        </>
+        )}
         </div>
       </main>
     </div>

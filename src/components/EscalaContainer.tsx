@@ -228,6 +228,8 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
             const isSaved = savedMap[evento.id] || false;
             const semConvidados = convidados.length === 0;
             const dateInfo = formatarData(evento.start);
+            const deptIdDoEvento = evento.extendedProps?.departamento_id || userDeptId;
+            const equipeDoDept = departamentos.find(d => d.id === deptIdDoEvento)?.equipe_json || [];
 
             return (
               <div key={evento.id} className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all ${semConvidados ? 'border-amber-200' : 'border-slate-200'}`}>
@@ -288,6 +290,26 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                 <div className="p-4">
                   {/* Input de novo convidado */}
                   <div className="flex gap-2 mb-3">
+                    {equipeDoDept.length > 0 && (
+                      <select 
+                        className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-600 max-w-[140px]"
+                        onChange={(e) => {
+                          const idx = e.target.value;
+                          if (idx) {
+                             const pessoa = equipeDoDept[idx];
+                             setInput(evento.id, 'nome', pessoa.nome);
+                             setInput(evento.id, 'telefone', pessoa.telefone || '');
+                             e.target.value = ""; // reseta o select
+                          }
+                        }}
+                        defaultValue=""
+                      >
+                         <option value="" disabled>Equipe...</option>
+                         {equipeDoDept.map((m: any, i: number) => (
+                           <option key={i} value={i}>{m.nome}</option>
+                         ))}
+                      </select>
+                    )}
                     <input
                       type="text"
                       placeholder="Nome do convidado"
