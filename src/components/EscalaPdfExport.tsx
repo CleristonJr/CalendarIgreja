@@ -102,17 +102,9 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
               new Date(a.start).getTime() - new Date(b.start).getTime()
           );
 
-        const grupos = eventos.reduce<Record<string, EventoPdf[]>>((acc, evento) => {
-          const chave = formatarDia(evento.start);
-          if (!acc[chave]) acc[chave] = [];
-          acc[chave].push(evento);
-          return acc;
-        }, {});
-
         return {
           departamento,
-          eventos,
-          grupos,
+          eventos
         };
       }
     );
@@ -167,58 +159,37 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
         return;
       }
 
-      const gruposOrdenados = Object.entries(item.grupos).sort(
-        (a, b) =>
-          new Date(item.grupos[a[0]][0].start).getTime() -
-          new Date(item.grupos[b[0]][0].start).getTime()
-      );
+      // Create one single table for all events
+      const body = item.eventos.map((evento: EventoPdf) => [
+        new Date(evento.start).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        }),
+        evento.title,
+        formatarConvidados(evento, item.departamento.nome || "Departamento"),
+      ]);
 
-      gruposOrdenados.forEach(([diaLabel, eventosDoDia]) => {
-        if (cursorY > 250) {
-          doc.addPage();
-          gerarCabecalho(item.departamento.nome || "Departamento");
-          cursorY = 38;
-        }
-
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text(diaLabel, leftMargin, cursorY);
-        cursorY += 8;
-
-        const body = eventosDoDia.map((evento: EventoPdf) => [
-          new Date(evento.start).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-          }),
-          evento.title,
-          formatarConvidados(evento, item.departamento.nome),
-        ]);
-
-        autoTable(doc, {
-          startY: cursorY,
-          head: [["Data", "Evento", "Convidados"]],
-          body,
-          margin: { left: leftMargin, right: rightMargin },
-          styles: {
-            fontSize: 10,
-            cellPadding: 3,
-            overflow: "linebreak",
-          },
-          headStyles: {
-            fillColor: [99, 102, 241],
-            textColor: 255,
-          },
-          columnStyles: {
-            0: { cellWidth: 26 },
-            1: { cellWidth: 56 },
-            2: { cellWidth: maxWidth - 22 - 60 },
-          },
-          theme: "striped",
-        });
-
-        cursorY = (doc as any).lastAutoTable?.finalY ?? cursorY + 10;
-        cursorY += 8;
+      autoTable(doc, {
+        startY: cursorY,
+        head: [["Data", "Evento", "Convidados"]],
+        body,
+        margin: { left: leftMargin, right: rightMargin },
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+          overflow: "linebreak",
+        },
+        headStyles: {
+          fillColor: [99, 102, 241],
+          textColor: 255,
+        },
+        columnStyles: {
+          0: { cellWidth: 26 },
+          1: { cellWidth: 56 },
+          2: { cellWidth: maxWidth - 22 - 60 },
+        },
+        theme: "striped",
       });
     });
 
