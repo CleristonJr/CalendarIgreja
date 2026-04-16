@@ -71,10 +71,13 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
   const getInput = (eventoId: string) => inputsMap[eventoId] || { nome: '', telefone: '' };
 
   const setInput = (eventoId: string, field: 'nome' | 'telefone', value: string) => {
-    setInputsMap(prev => ({
-      ...prev,
-      [eventoId]: { ...getInput(eventoId), [field]: value }
-    }));
+    setInputsMap(prev => {
+      const current = prev[eventoId] || { nome: '', telefone: '' };
+      return {
+        ...prev,
+        [eventoId]: { ...current, [field]: value }
+      };
+    });
   };
 
   const addGuest = (eventoId: string, evento: any) => {
