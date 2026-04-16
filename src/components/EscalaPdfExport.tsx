@@ -10,7 +10,8 @@ type EventoPdf = {
   title: string;
   extendedProps?: {
     departamento_id?: string;
-    convidados?: Array<{ nome: string }>;
+    colaboradores_ids?: string[];
+    convidados?: Array<{ nome: string, departamento_nome?: string }>;
   };
 };
 
@@ -91,9 +92,11 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
     const eventosPorDepartamento: DepartamentoComEventos[] = departamentosSelecionados.map(
       (departamento) => {
         const eventos = eventosMes
-          .filter(
-            (evento) => evento.extendedProps?.departamento_id === departamento.id
-          )
+          .filter((evento) => {
+            const orgId = evento.extendedProps?.departamento_id;
+            const cols = evento.extendedProps?.colaboradores_ids || [];
+            return orgId === departamento.id || cols.includes(departamento.id);
+          })
           .sort(
             (a, b) =>
               new Date(a.start).getTime() - new Date(b.start).getTime()
@@ -114,9 +117,10 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
       }
     );
 
-    const formatarConvidados = (evento: any) => {
+    const formatarConvidados = (evento: any, depNome: string) => {
       const convidados = evento.extendedProps?.convidados || [];
       const nomes = convidados
+        .filter((c: any) => c.departamento_nome === depNome)
         .map((convidado: any) => convidado.nome)
         .filter(Boolean);
       return nomes.length > 0 ? nomes.join("\n") : "Nenhum convidado";
@@ -182,17 +186,18 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
         cursorY += 8;
 
         const body = eventosDoDia.map((evento: EventoPdf) => [
-          new Date(evento.start).toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
+          new Date(evento.start).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
           }),
           evento.title,
-          formatarConvidados(evento),
+          formatarConvidados(evento, item.departamento.nome),
         ]);
 
         autoTable(doc, {
           startY: cursorY,
-          head: [["Hora", "Evento", "Convidados"]],
+          head: [["Data", "Evento", "Convidados"]],
           body,
           margin: { left: leftMargin, right: rightMargin },
           styles: {
@@ -205,8 +210,8 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
             textColor: 255,
           },
           columnStyles: {
-            0: { cellWidth: 22 },
-            1: { cellWidth: 60 },
+            0: { cellWidth: 26 },
+            1: { cellWidth: 56 },
             2: { cellWidth: maxWidth - 22 - 60 },
           },
           theme: "striped",
