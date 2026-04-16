@@ -95,7 +95,7 @@ export default function NovoEventoModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Início *</label>
                   <input
@@ -132,7 +132,7 @@ export default function NovoEventoModal({
               {departamentos.length > 0 && (
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Departamentos Colaboradores</label>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 border border-slate-200 rounded-lg bg-slate-50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 border border-slate-200 rounded-lg bg-slate-50">
                     {departamentos.map(d => (
                       <label key={d.id} className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-100 p-1 rounded transition">
                         <input type="checkbox" name="colaboradores_ids" value={d.id} className="rounded text-indigo-600 focus:ring-indigo-600" />

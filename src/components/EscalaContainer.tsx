@@ -332,10 +332,10 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                 {/* Corpo - Convidados + Formulário */}
                 <div className="p-4">
                   {/* Input de novo convidado */}
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex flex-col sm:flex-row gap-2 mb-3 items-stretch">
                     {equipeDoDept.length > 0 && (
                       <select 
-                        className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-600 max-w-[140px]"
+                        className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-600 w-full sm:w-auto sm:max-w-[140px]"
                         onChange={(e) => {
                           const idx = e.target.value;
                           if (idx) {
@@ -353,31 +353,35 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                          ))}
                       </select>
                     )}
-                    <input
-                      type="text"
-                      placeholder="Nome do convidado"
-                      value={input.nome}
-                      onChange={e => setInput(evento.id, 'nome', e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(evento.id, evento); } }}
-                      className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Telefone"
-                      value={input.telefone}
-                      onChange={e => setInput(evento.id, 'telefone', e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(evento.id, evento); } }}
-                      className="w-36 text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white hidden sm:block"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => addGuest(evento.id, evento)}
-                      disabled={!input.nome.trim()}
-                      className="p-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition disabled:opacity-40 shrink-0"
-                      title="Adicionar"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
+                    <div className="flex flex-col sm:flex-row flex-1 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nome do convidado"
+                        value={input.nome}
+                        onChange={e => setInput(evento.id, 'nome', e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(evento.id, evento); } }}
+                        className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                      />
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <input
+                          type="text"
+                          placeholder="Telefone"
+                          value={input.telefone}
+                          onChange={e => setInput(evento.id, 'telefone', e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGuest(evento.id, evento); } }}
+                          className="flex-1 sm:w-36 text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addGuest(evento.id, evento)}
+                          disabled={!input.nome.trim()}
+                          className="p-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition disabled:opacity-40 shrink-0"
+                          title="Adicionar"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Lista de Convidados */}

@@ -96,21 +96,22 @@ export default async function ConfiguracoesIgreja({
             {isLider ? "Gerenciamento da equipe do seu departamento." : "Gestão local de cores, departamentos e membros da equipe."}
           </p>
 
-        {/* Gerenciamento de Equipe visível para Líder e Ancião */}
-        <GerenciadorEquipe 
-          igreja={igreja} 
-          slug={slug} 
-          departamentos={departamentos || []} 
-          perfil={perfil} 
-        />
-
-        {!isLider && (
+        {isLider ? (
+          <GerenciadorEquipe 
+            igreja={igreja} 
+            slug={slug} 
+            departamentos={departamentos || []} 
+            perfil={perfil} 
+          />
+        ) : (
           <>
+            {/* 1. SETUP DA IGREJA */}
             <GerenciadorLogo 
               igreja={igreja}
               slug={slug}
             />
 
+            {/* 2. ESTRUTURA DE DEPARTAMENTOS */}
             <GerenciadorDepartamentos 
               igreja={igreja} 
               slug={slug} 
@@ -118,27 +119,22 @@ export default async function ConfiguracoesIgreja({
               PALETA_CORES={PALETA_CORES} 
             />
 
-            <GerenciadorDoxologiaTemplates
-              igreja={igreja}
-              slug={slug}
-              templates={templates || []}
-            />
-
-            {/* ---------------------------------------------------- */}
-            {/* SESSÃO 2: MEMBROS DA EQUIPE (LÍDERES) */}
-            {/* ---------------------------------------------------- */}
+            {/* 3. ACESSOS E LÍDERES (MEMBROS DO SISTEMA) */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
-          <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center">
-              <Users className="w-5 h-5 mr-2 text-indigo-600" />
-              Líderes de Departamento
-            </h2>
-          </div>
+              <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center">
+                  <UserPlus className="w-5 h-5 mr-2 text-indigo-600" />
+                  Gerenciar Acessos e Líderes
+                </h2>
+                <p className="text-sm text-slate-500 mt-1 ml-7">
+                  Adicione ou remova líderes que poderão gerenciar departamentos e acessar o sistema.
+                </p>
+              </div>
 
-          <div className="p-6 md:flex md:space-x-8">
-            {/* Lado Esquerdo: Formulário */}
-            <div className="md:w-1/3 mb-8 md:mb-0">
-              <form action={criarMembro} className="space-y-4">
+              <div className="p-6 md:flex md:space-x-8">
+                {/* Lado Esquerdo: Formulário */}
+                <div className="md:w-1/3 mb-8 md:mb-0">
+                  <form action={criarMembro} className="space-y-4">
                 <input type="hidden" name="igreja_id" value={igreja.id} />
                 <input type="hidden" name="slug" value={slug} />
 
@@ -241,9 +237,29 @@ export default async function ConfiguracoesIgreja({
                 </div>
               )}
             </div>
-          </div>
-        </div>
-        </>
+            </div>
+            
+            {/* 4. EQUIPES INTERNAS DOS DEPARTAMENTOS */}
+            <div className="mt-8">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Membros Voluntários dos Departamentos</h3>
+              <GerenciadorEquipe 
+                igreja={igreja} 
+                slug={slug} 
+                departamentos={departamentos || []} 
+                perfil={perfil} 
+              />
+            </div>
+
+            {/* 5. TEMPLATES E ROTINAS DE CULTO */}
+            <div className="mt-8">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Templates de Eventos</h3>
+              <GerenciadorDoxologiaTemplates
+                igreja={igreja}
+                slug={slug}
+                templates={templates || []}
+              />
+            </div>
+          </>
         )}
         </div>
       </main>

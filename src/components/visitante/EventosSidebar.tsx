@@ -68,16 +68,18 @@ export default function EventosSidebar({
 
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
 
-        {/* Calendário Geral - Destacado como no Mockup */}
-        <div className="mb-8">
-          <Link
-            href={user ? `/${igreja.slug}/calendario` : `/${igreja.slug}`}
-            className={`flex items-center px-4 py-3 rounded-xl font-bold transition-colors bg-[#f5f3ff] text-[#6366f1] hover:bg-[#ede9fe] border shadow-sm border-[#ede9fe]`}
-          >
-            <LayoutDashboard className="w-5 h-5 mr-3 shrink-0" />
-            <span className="truncate">Calendário Geral</span>
-          </Link>
-        </div>
+        {/* Calendário Geral - Destacado como no Mockup - Exclusivo para quem fez login */}
+        {user && (
+          <div className="mb-8">
+            <Link
+              href={`/${igreja.slug}/calendario`}
+              className={`flex items-center px-4 py-3 rounded-xl font-bold transition-colors bg-[#f5f3ff] text-[#6366f1] hover:bg-[#ede9fe] border shadow-sm border-[#ede9fe]`}
+            >
+              <LayoutDashboard className="w-5 h-5 mr-3 shrink-0" />
+              <span className="truncate">Calendário Geral</span>
+            </Link>
+          </div>
+        )}
 
         <div className="px-2 pb-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
           DEPARTAMENTOS

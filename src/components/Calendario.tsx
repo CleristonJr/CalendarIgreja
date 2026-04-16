@@ -534,7 +534,7 @@ export default function Calendario({
                         className="w-full text-sm border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-indigo-600 bg-white disabled:bg-slate-100 disabled:text-slate-400" />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1">Início *</label>
                         <input type="datetime-local" name="data_inicio" defaultValue={toDateTimeLocal(eventoSelecionado.start)} required 
@@ -562,7 +562,7 @@ export default function Calendario({
                     {departamentos.length > 0 && (
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1">Colaboradores</label>
-                        <div className="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto p-2 border border-slate-300 rounded-lg bg-white opacity-80"
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-24 overflow-y-auto p-2 border border-slate-300 rounded-lg bg-white opacity-80"
                              style={{ pointerEvents: !isOrganizador ? 'none' : 'auto' }}>
                           {departamentos.map(d => (
                             <label key={d.id} className="flex items-center space-x-1.5 text-xs text-slate-700">

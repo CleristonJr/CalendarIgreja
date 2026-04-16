@@ -218,9 +218,9 @@ export default function EscalaPdfExport({ departamentos, eventosMes, mesAtual, a
                 Selecione os departamentos que devem ser incluídos no PDF do mês.
               </p>
             </div>
-            <div className="space-y-4 px-6 py-6">
+            <div className="space-y-4 px-6 py-6 max-h-[60vh] overflow-y-auto">
               <div className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-600">
-                O PDF será gerado com cada departamento em página separada. Cada seção traz os eventos do mês organizados por dia da semana e a lista de convidados para a data.
+                O PDF será gerado com cada departamento em página separada. As seções trazem os eventos do mês organizados pela data e a lista de convidados.
               </div>
 
               <div className="grid gap-3">
