@@ -237,9 +237,10 @@ export default async function ConfiguracoesIgreja({
                 </div>
               )}
             </div>
-            </div>
+          </div>
+        </div>
             
-            {/* 4. EQUIPES INTERNAS DOS DEPARTAMENTOS */}
+        {/* 4. EQUIPES INTERNAS DOS DEPARTAMENTOS */}
             <div className="mt-8">
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Membros Voluntários dos Departamentos</h3>
               <GerenciadorEquipe 
