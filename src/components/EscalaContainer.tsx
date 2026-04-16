@@ -36,6 +36,9 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
   const [savingMap, setSavingMap] = useState<Record<string, boolean>>({});
   // Controle de "salvo" visual por evento
   const [savedMap, setSavedMap] = useState<Record<string, boolean>>({});
+  
+  // Controle do salvamento em lote
+  const [isSavingAll, setIsSavingAll] = useState(false);
 
   const mesesPtBr = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
@@ -112,7 +115,7 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
   };
 
   // Salvar convidados de um evento
-  const salvarConvidados = async (evento: any) => {
+  const salvarConvidados = async (evento: any, autoRefresh = true) => {
     setSavingMap(prev => ({ ...prev, [evento.id]: true }));
     try {
       const fd = new FormData();
@@ -133,11 +136,32 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
 
       await editarEvento(fd);
       setSavedMap(prev => ({ ...prev, [evento.id]: true }));
-      router.refresh();
+      if (autoRefresh) router.refresh();
     } catch (err: any) {
       alert("Erro ao salvar: " + err.message);
     } finally {
       setSavingMap(prev => ({ ...prev, [evento.id]: false }));
+    }
+  };
+
+  const salvarTodos = async () => {
+    setIsSavingAll(true);
+    try {
+      const modificados = eventosMes.filter(e => savedMap[e.id] === false);
+      if (modificados.length === 0) {
+        alert("Sem alterações pendentes para salvar.");
+        setIsSavingAll(false);
+        return;
+      }
+      
+      const promises = modificados.map(e => salvarConvidados(e, false));
+      await Promise.all(promises);
+      
+      router.refresh();
+    } catch (e: any) {
+      alert("Erro ao salvar a escala em lote.");
+    } finally {
+      setIsSavingAll(false);
     }
   };
 
@@ -169,6 +193,15 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <button
+            onClick={salvarTodos}
+            disabled={isSavingAll}
+            className="flex items-center justify-center gap-2 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-50 px-4 py-2 text-sm font-semibold text-white shadow-sm transition"
+          >
+            <Save className="w-4 h-4" />
+            {isSavingAll ? "Salvando..." : "Salvar Tudo"}
+          </button>
+          
           <EscalaPdfExport
             departamentos={departamentos}
             eventosMes={eventosMes}
