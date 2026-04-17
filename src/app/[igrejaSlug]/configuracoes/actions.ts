@@ -103,12 +103,14 @@ export async function criarMembro(formData: FormData) {
 
   if (authError || !newUser?.user) throw new Error("Erro ao criar usuário: " + authError?.message)
 
+  const userRole = departamento_id ? 'lider' : 'ansiao';
+
   // 2. Atualizar perfil criado pelo trigger
   const { error: perfilError } = await adminClient.from('perfis').update({
     nome_completo: nome,
     igreja_id: igreja_id,
     departamento_id: departamento_id || null,
-    role: 'lider'
+    role: userRole
   }).eq('id', newUser.user.id)
 
   if (perfilError) throw new Error("Erro ao vincular perfil: " + perfilError.message)

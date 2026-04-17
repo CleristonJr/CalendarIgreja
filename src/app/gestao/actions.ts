@@ -142,6 +142,50 @@ export async function rejeitarSolicitacao(solicitacaoId: string) {
 }
 
 // ============================================
+// ASSOCIAÇÃO DIRETA DE ANCIÃO
+// ============================================
+
+export async function associarAnsiao(formData: FormData) {
+  const nome = formData.get('nome') as string
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const igreja_id = formData.get('igreja_id') as string
+  const slug = formData.get('slug') as string
+
+  if (!email || !password || !igreja_id || !nome) throw new Error("Dados incompletos.")
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Não autorizado")
+  
+  const { data: perfil } = await supabase.from('perfis').select('role').eq('id', user.id).single()
+  if (perfil?.role !== 'superadmin') throw new Error("Acesso restrito a Super Administradores")
+
+  const adminClient = createAdminClient()
+
+  // 1. Criar Auth User
+  const { data: newUser, error: authError } = await adminClient.auth.admin.createUser({
+    email,
+    password,
+    user_metadata: { name: nome },
+    email_confirm: true
+  })
+
+  if (authError || !newUser?.user) throw new Error("Erro ao criar usuário: " + authError?.message)
+
+  // 2. Atualizar perfil
+  const { error: perfilError } = await adminClient.from('perfis').update({
+    nome_completo: nome,
+    igreja_id: igreja_id,
+    role: 'ansiao'
+  }).eq('id', newUser.user.id)
+
+  if (perfilError) throw new Error("Erro ao vincular perfil: " + perfilError.message)
+
+  revalidatePath(`/gestao/${slug}`)
+}
+
+// ============================================
 // GESTÃO DE SEGURANÇA DE ANSIÕES
 // ============================================
 
