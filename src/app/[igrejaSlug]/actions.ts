@@ -3,6 +3,41 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 
+function validarDoxologia(doxologia: any[], data_inicio: string, data_fim: string) {
+  if (!doxologia || doxologia.length === 0) return;
+  const evInicio = new Date(data_inicio).getTime();
+  const evFim = new Date(data_fim).getTime();
+  const dateOrigin = new Date(data_inicio);
+
+  for (const item of doxologia) {
+    if (!item.hora) {
+      item._timeMs = 0;
+      continue;
+    }
+    const [h, m] = item.hora.split(':').map(Number);
+    
+    let itemDate = new Date(dateOrigin);
+    itemDate.setHours(h, m, 0, 0);
+    let timeMs = itemDate.getTime();
+
+    if (timeMs < evInicio && evFim > evInicio && new Date(evFim).getDate() !== dateOrigin.getDate()) {
+      itemDate.setDate(itemDate.getDate() + 1);
+      timeMs = itemDate.getTime();
+    }
+
+    if (timeMs < evInicio || timeMs > evFim) {
+      throw new Error(`Não é permitido salvar! O horário da doxologia (${item.hora}) está fora do intervalo de horário do culto/evento.`);
+    }
+    item._timeMs = timeMs;
+  }
+
+  doxologia.sort((a: any, b: any) => (a._timeMs || 0) - (b._timeMs || 0));
+
+  for (const item of doxologia) {
+    delete item._timeMs;
+  }
+}
+
 export async function criarEvento(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -23,8 +58,10 @@ export async function criarEvento(formData: FormData) {
 
   if (!titulo || !data_inicio || !data_fim) throw new Error("Preencha todos os campos obrigatórios.")
   
-  let doxologia = [];
+  let doxologia: any[] = [];
   try { if (doxologia_json) doxologia = JSON.parse(doxologia_json); } catch(e) {}
+  
+  validarDoxologia(doxologia, data_inicio, data_fim);
   
   const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
 
@@ -113,8 +150,10 @@ export async function editarEvento(formData: FormData) {
     }
   } catch(e) { console.error("Erro ao dar parse em convidados JSON") }
 
-  let doxologia = [];
+  let doxologia: any[] = [];
   try { if (doxologia_json) doxologia = JSON.parse(doxologia_json); } catch(e) {}
+  
+  validarDoxologia(doxologia, data_inicio, data_fim);
 
   const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
   const { data: evento_original } = await supabase.from('eventos').select('*').eq('id', evento_id).single()

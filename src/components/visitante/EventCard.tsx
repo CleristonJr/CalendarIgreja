@@ -122,7 +122,7 @@ export default function EventCard({ evento, onOpenDoxologia, onOpenEscalados, on
               onClick={onOpenEscalados}
               className="flex-1 min-w-[140px] px-6 py-3.5 bg-white text-slate-700 font-bold text-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:text-slate-900 rounded-xl transition duration-300"
             >
-              Escalados
+              Escala
             </button>
           </div>
         )}

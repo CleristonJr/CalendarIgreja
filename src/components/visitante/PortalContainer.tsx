@@ -340,7 +340,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative flex flex-col max-h-[85vh]">
             <div className="shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-black text-slate-800">Escalados</h2>
+                <h2 className="text-2xl font-black text-slate-800">Escala</h2>
                 <p className="text-slate-500 font-medium text-sm mt-1">{eventoParaEscalados?.title}</p>
               </div>
               <button onClick={() => setPopupEscaladosOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
