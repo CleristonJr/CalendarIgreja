@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7 Flow - Manual do Sistema</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Variáveis de Cores extraídas da Imagem */
+    :root {
+      --bg-body: #f8f9fc;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --purple-light: #f3f0ff;
+      --purple-dark: #6b46c1;
+      --border-light: #e2e8f0;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --radius-lg: 24px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    /* Otimização obrigatória para manter as cores na geração do PDF */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Estrutura do Layout simulando a UI da imagem */
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-light);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-body);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 12px;
+    }
+
+    .logo-text h1 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .logo-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .menu-item {
+      background-color: var(--purple-light);
+      color: var(--purple-dark);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 40px;
+      max-width: 1000px;
+    }
+
+    /* Cabeçalho da Página */
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    /* Estilo dos Cards (Baseado nos eventos da imagem) */
+    .card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+      position: relative;
+      /* Evita que o card seja cortado na metade da página no PDF */
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 24px 0 8px 0;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card p strong {
+      color: var(--text-main);
+    }
+
+    /* Listas Estilizadas */
+    ul {
+      list-style: none;
+      margin-bottom: 16px;
+    }
+
+    ul li {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    ul li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--purple-dark);
+    }
+
+    ul li strong {
+      color: var(--text-main);
+    }
+
+    /* Badges baseados no design de botões da imagem */
+    .badge {
+      display: inline-block;
+      background-color: var(--bg-body);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 4px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* Caixa de Alerta / Highlight */
+    .highlight-box {
+      background-color: var(--bg-body);
+      border-left: 4px solid var(--text-main);
+      padding: 16px;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin: 16px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Configurações Específicas para Geração de PDF */
+    @media print {
+      body {
+        background-color: #ffffff;
+        display: block;
+        /* Remove o flex para paginação funcionar melhor */
+      }
+
+      .sidebar {
+        display: none;
+        /* Esconde a barra lateral na impressão para economizar espaço */
+      }
+
+      .main-content {
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .card {
+        box-shadow: none;
+        border: 1px solid var(--border-light);
+        margin-bottom: 20px;
+        padding: 24px;
+      }
+
+      /* Adiciona um cabeçalho de impressão simples */
+      .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border-light);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <img src="./7FlowLogo.jpeg" alt="" srcset="" style="width: 100%; ">
+      </div>
+      <div class="logo-text">
+        <h1>7 FLOW</h1>
+        <p>Agenda Inteligente</p>
+      </div>
+    </div>
+    <div class="menu-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+      Manual do Sistema
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div style="width: 100%; justify-content: center; display: flex; margin-bottom: 20px;">
+      <img src="./7FlowLogo.jpeg" alt="" srcset="" style="width: 80%;">
+    </div>
+
+
+    <header class="page-header">
+      <h1>Manual do Sistema: Agenda Inteligente</h1>
+      <p>Geração Automática, Organização e Gestão Colaborativa para sua Liderança</p>
+    </header>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Resumo do Sistema</h2>
+      </div>
+      <p>O <strong>7 Flow</strong> é uma plataforma robusta e moderna desenvolvida para centralizar a gestão de eventos,
+        ministérios e voluntariados de uma igreja. Com uma arquitetura multi-igreja focada na colaboração inteligente, o
+        sistema permite que as lideranças não dependam de planilhas e grupos confusos de mensagens para organizar toda a
+        liturgia (Doxologia), escalar equipes inter-departamentais e programar eventos recorrentes de forma totalmente
+        visual e instantânea.</p>
+      <p>Além da parte gerencial, ele fornece a toda membresia um Portal Público e interativo para que saibam com
+        clareza (através de uma interface responsiva, limpa e amigável para celulares) todos os horários e o que a
+        liderança preparou de programação.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>1. Arquitetura Multi-Igreja e Perfis de Acesso</h2>
+      </div>
+      <p>O sistema opera em um modelo onde cada Igreja possui o seu próprio ambiente isolado da rede (baseado em um
+        endereço personalizável "Slug"). A hierarquia máxima dita o que cada pessoa vê:</p>
+      <ul>
+        <li><span class="badge">Ancião (Administrador Local)</span><br>Possui controle total para gerir as engrenagens
+          da sua respectiva congregação e editar escalas irrestritamente de toda e qualquer congregação associada. Ele
+          edita grupos, escala voluntários de todo lugar, atualiza a logo global, gerencia as credenciais da equipe
+          matriz.</li>
+        <li><span class="badge">Líder de Departamento</span><br>Seu poder de intervenção é restrito cirurgicamente aos
+          eventos em que o seu próprio departamento é curador principal, ou naqueles onde ele foi requisitado como
+          "Colaborador".</li>
+        <li><span class="badge">Membro / Visitante Público</span><br>Possui modo super focado, apenas de leitura. Acessa
+          o painel geral da Igreja a fim de se localizar semanalmente sem enxergar atalhos ocultos.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>2. Cadastro de Credenciais e Equipe</h2>
+      </div>
+      <p>Sua corporação (Líderes) necessita de logins autorizados para editar eventos em tempo real, criados em nuvem
+        pelos Administradores da respectiva casa.</p>
+      <h3>Como habilitar o acesso:</h3>
+      <ul>
+        <li>Abaixo de <strong>Configurações ⚙</strong>, localize a região dedicada de "Gerenciar Acessos e Líderes".
+        </li>
+        <li>Preencha o <strong>Nome</strong>, credencie um <strong>e-mail de acesso personalizado</strong> (O sistema
+          embutirá o endereço oficial @slug.com) e escolha a senha da nova conta provendo-lhe os acessos.</li>
+        <li>No campo chave <strong>Departamento</strong>, decida o nível tático da pessoa.</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>⚠ Importante (Delegação Global):</strong> Ao criar o membro e delegá-lo como "Acesso Global (Sem
+          Restrição)", este login será automaticamente elevado à patente de Ancião, herdando controle perene e geral das
+          abas e acessos da igreja!</p>
+      </div>
+
+      <p>Ao travá-lo setando nele um Departamento listado, a pessoa obterá a governança moderada de
+        <strong>Líder</strong>, apenas editando sobre esferas que lhe circundam.
+      </p>
+      <p>Há também a caixa secundária dos "Membros Voluntários", onde uma liderança armazena nominais das pessoas
+        (coral, equipe de trânsito) só para tê-las no banco e engatá-las nas listas de escala mais facilmente a frente,
+        ou seja, são pessoas que colaboram mas <strong>não acessam o portal de edição</strong>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>3. Gestão Completa de Departamentos (Grupos)</h2>
+      </div>
+      <p>Toda engrenagem centraliza numa tribo. Departamentos representam seus ministérios consolidados (Recepção,
+        Desbravadores, Diaconato, etc). Todo evento oficial provém encabeçado e sustentado por alguém.</p>
+      <h3>Funcionalidades de Gerenciamento Setorial:</h3>
+      <ul>
+        <li><strong>Atrelagem de Identidade Visual:</strong> Recebendo customizações profundas, o usuário elege uma Cor
+          de Identificação padrão da organização. Essa cor síncrona acenderá imediatamente as pulseiras (tags/etiquetas)
+          ao redor de 100% que represente aquela área no painel principal.</li>
+        <li><strong>Upload de Identidades de Nicho:</strong> É feito suporte total da injeção autônoma do banco de
+          arquivos pra as Logomarcas isoladas, caracterizando individualmente seus ministérios.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>4. Calendários Oficializados (O Core Tático)</h2>
+      </div>
+      <p>Central do 7 Flow: Coordenar cronogramas dinâmicos da semana sem medo dos ruídos e engarrafamentos temporais de
+        planilhas. Só a hierarquia da equipe escala os registros.</p>
+
+      <h3>4.1. Construção Inteligente e Restrições de Agenda</h3>
+      <p>No módulo Grid Mensal flutuante do portal nativo, o dia alvo emite modal limpo + <strong>Novo Evento</strong>.
+      </p>
+      <ul>
+        <li><strong>Delimitação Cronológica:</strong> Prazos rígidos cobram preenchimentos para engessar os painéis nos
+          dias das execuções (Evita horários conflitantes). Trata de um modelo Server-Side validado.</li>
+        <li><strong>Multitasking Colaborativo:</strong> Para eventos plurais, o organizador mestre pode chamar em clique
+          múltiplos Departamentos Colaboradores.</li>
+        <li><strong>Mídia Integrada de Banner:</strong> Arquivos sobressaem convertidos, compactados instantaneamente
+          direto pra nuvem da plataforma.</li>
+      </ul>
+
+      <h3>4.2. Clone Automatizado em Lote (Recorrências Contínuas)</h3>
+      <p>Marcando-se de forma enxuta <strong>"Repetir Semanalmente"</strong>, o algoritmo vai preencher todo o banco do
+        ano copiando horários idênticos da grade nas próximas 26 semanas consecutivas (Exatos 6 meses em 1 único
+        clique).</p>
+
+      <h3>4.3. Sistema Cascata Editável</h3>
+      <p>No backend das edições avulsas, se um horário oficial do culto de domingo é revisado, o usuário acopla com o
+        seletor pedindo: <em>"Somente pro culto desse dia"</em> VS <em>"Pra este momento e repise a regra para todos os
+          clones futuros"</em>. Sem contaminar a estatística local!</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>5. A Engenharia Pura: Doxologias e Convidados</h2>
+      </div>
+
+      <h3>5.1 Sistema Mestre dos Templates p/ Liturgia</h3>
+      <p>Anciãos modelam cronogramas duros fixados p/ base de dados. Um modelo salvo ali constará já pronto em instantes
+        na hora de criar do zero um layout de evento com aqueles mesmos trechos e canções agendados.</p>
+
+      <h3>5.2. Editor Validado e Seguro (Doxologias Reativas)</h3>
+      <p>A máquina de gerenciamento constrói perfeitamente o tempo. É explicitamente impedido o salvamento se por acaso
+        um dos gestores cadastrar uma dinâmica de tempo que escapa pra um horário que ultrapasse a moldura oficial do
+        começo ou fim do dia do templo!</p>
+      <ul>
+        <li><strong>Ajuste Espacial Dinâmico:</strong> A alocação organiza o culto verticalmente enquanto se digita na
+          interface React, incluindo uma análise noturna onde momentos "01:45" saltam perfeitamente pós fechamentos
+          tardios da cronologia meia-noite.</li>
+      </ul>
+
+      <h3>5.3. Escalada Tagmada do Staff Local</h3>
+      <p>Durante o Módulo de Seleção, ao subir "João" à tela daquele evento, o Back-End empunha a quem convocou o tag e
+        etiqueta sua área de quem a operou (Recepção), alinhando e selando o rapaz nas caixas divisórias e emissores
+        específicos.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>6. Smart Portal Visitante (Telas Livres)</h2>
+      </div>
+      <p>Uma UI/UX pública focada central nas congregações com logotipo autoral de portal próprio para visualização e
+        consulta externa rápida por celulares da nave de culto.</p>
+      <ul>
+        <li><strong>Filtragens Responsivas:</strong> O Congregado é livre no App via Switch lateral isolatório, ligando
+          ou "escondendo" chaves coloridas por departamentos a gosto visual.</li>
+        <li><strong>Privacy Design Interno (Hide Mod):</strong> Operações e burocracias das equipes do evento sofrem
+          forte restrição visual. Um congregante recebe os horários limpos sem a capacidade intrusiva de xeretar escalas
+          internas corporativas restritas.</li>
+        <li><strong>Monitor Passivo da Apresentação (Slideshow TV):</strong> Um software silencioso, feito exclusivo
+          para a TV smart / Lobby eletrônico acende quando as recepções ficam com controle remoto congelado. O Idle Time
+          vira mídia digital programada.</li>
+      </ul>
+    </div>
+
+  </main>
+
+</body>
+
+</html>
