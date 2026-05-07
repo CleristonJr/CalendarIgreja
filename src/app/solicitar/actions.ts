@@ -10,7 +10,7 @@ export async function criarSolicitacaoIgreja(formData: FormData) {
   const nome_igreja = formData.get('nome_igreja') as string
 
   if (!email || !password || !nome_igreja) {
-    throw new Error("Todos os campos cruciais são obrigatórios.")
+    return { error: "Todos os campos cruciais são obrigatórios." }
   }
 
   const supabase = await createClient()
@@ -51,9 +51,9 @@ export async function criarSolicitacaoIgreja(formData: FormData) {
   })
 
   // Se o email já estiver em uso, ele retorna error
-  if (authError) throw new Error("Erro ao registrar e-mail (já está em uso?): " + authError.message)
+  if (authError) return { error: "Erro ao registrar e-mail (já está em uso?): " + authError.message }
   
-  if (!authData.user) throw new Error("Falha ao gerar o ID do usuário.")
+  if (!authData.user) return { error: "Falha ao gerar o ID do usuário." }
 
   // 3. Atualiza o perfil criado automaticamente pelo trigger, apenas garantindo o nome dele
   await supabase.from('perfis').update({ nome_completo: nome_ansiao }).eq('id', authData.user.id)
@@ -69,11 +69,11 @@ export async function criarSolicitacaoIgreja(formData: FormData) {
   if (insertError) {
     // Reverter conta criada (idealmente), mas vamos estourar pra frente
     console.error(insertError)
-    throw new Error("Erro na solicitação: " + insertError.message)
+    return { error: "Erro na solicitação: " + insertError.message }
   }
 
   // Deslogamos o usuário forçadamente, porque senão o signUp o deixa logado sem permissão
   await supabase.auth.signOut()
 
-  return true;
+  return { success: true };
 }

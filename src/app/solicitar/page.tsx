@@ -15,10 +15,14 @@ export default function SolicitarIgreja() {
     setLoading(true);
     setErrorMsg("");
     try {
-      await criarSolicitacaoIgreja(formData);
-      setSuccess(true);
+      const result = await criarSolicitacaoIgreja(formData);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      } else {
+        setSuccess(true);
+      }
     } catch (e: any) {
-      setErrorMsg(e.message);
+      setErrorMsg(e.message || "Ocorreu um erro inesperado.");
     } finally {
       setLoading(false);
     }
