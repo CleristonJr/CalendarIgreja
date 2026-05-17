@@ -7,6 +7,7 @@ import EventCard from './EventCard';
 import { X, Pencil, Users, Plus, Trash2, Repeat, ChevronLeft, ChevronRight } from 'lucide-react';
 import { editarEvento } from '@/app/[igrejaSlug]/actions';
 import DoxologiaEditor from '@/components/DoxologiaEditor';
+import { createClient } from '@/utils/supabase/client';
 
 interface PortalContainerProps {
   igreja: any;
@@ -181,10 +182,27 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   // Submit de edição
   async function handleEditSubmit(formData: FormData) {
     setEditLoading(true);
-    formData.append('convidados_json', JSON.stringify(convidadosList));
-    formData.append('modo_edicao', modoEdicao);
 
     try {
+      const arquivoImagem = formData.get("imagem") as File | null;
+      if (arquivoImagem && arquivoImagem.size > 0) {
+        const supabase = createClient();
+        const extensao = arquivoImagem.name.split('.').pop();
+        const nomeArquivo = `${igreja?.id || slug}_evento_${Date.now()}.${extensao}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from("arquivos_igreja")
+          .upload(nomeArquivo, arquivoImagem);
+
+        if (uploadError) throw new Error("Falha no upload da imagem: " + uploadError.message);
+
+        const { data: { publicUrl } } = supabase.storage.from("arquivos_igreja").getPublicUrl(nomeArquivo);
+        formData.set("imagem_url", publicUrl);
+      }
+
+      formData.append('convidados_json', JSON.stringify(convidadosList));
+      formData.append('modo_edicao', modoEdicao);
+
       await editarEvento(formData);
       closeEditModal();
       router.refresh();
@@ -461,6 +479,23 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                     <textarea name="descricao" rows={2} defaultValue={editingEvento.extendedProps?.descricao || ""} 
                       disabled={!isOrganizadorEdit}
                       className="w-full text-sm border border-slate-300 rounded-lg p-2 resize-none bg-white disabled:bg-slate-100 disabled:text-slate-400" />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Banner / Imagem <span className="text-slate-400 font-normal">(Opcional)</span></label>
+                    {editingEvento.extendedProps?.imagem_url && (
+                      <div className="mb-2 text-xs text-indigo-600">
+                        <a href={editingEvento.extendedProps.imagem_url} target="_blank" rel="noreferrer" className="underline font-semibold">Ver imagem atual</a>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      name="imagem"
+                      accept="image/png, image/jpeg, image/webp"
+                      disabled={!isOrganizadorEdit}
+                      className="w-full text-sm border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-600 bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Ao enviar uma nova imagem, a anterior será substituída.</p>
                   </div>
                 </div>
 

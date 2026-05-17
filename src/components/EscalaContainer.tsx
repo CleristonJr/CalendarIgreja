@@ -270,9 +270,12 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
 
             const semConvidados = convidadosVisiveis.length === 0;
             const dateInfo = formatarData(evento.start);
-            // Se for líder, usa a equipe do próprio líder. Se for ancião, usa a do organizador.
-            const deptIdDaEquipe = (userRole === 'lider' && userDeptId) ? userDeptId : (evento.extendedProps?.departamento_id || userDeptId);
-            const equipeDoDept = departamentos.find(d => d.id === deptIdDaEquipe)?.equipe_json || [];
+            // Se não for líder (ex: geral, ancião, superadmin), vê todas as equipes. Líder vê apenas a sua.
+            const mostraTodasEquipes = userRole !== 'lider';
+            const deptsParaSelect = mostraTodasEquipes
+              ? departamentos.filter(d => d.equipe_json && d.equipe_json.length > 0)
+              : departamentos.filter(d => d.id === userDeptId && d.equipe_json && d.equipe_json.length > 0);
+            const temEquipes = deptsParaSelect.length > 0;
 
             return (
               <div key={evento.id} className={`bg-white border rounded-2xl shadow-sm overflow-hidden transition-all ${semConvidados ? 'border-amber-200' : 'border-slate-200'}`}>
@@ -333,13 +336,13 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                 <div className="p-4">
                   {/* Input de novo convidado */}
                   <div className="flex flex-col sm:flex-row gap-2 mb-3 items-stretch">
-                    {equipeDoDept.length > 0 && (
+                    {temEquipes && (
                       <select 
                         className="text-sm border border-slate-200 rounded-lg px-2 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-600 w-full sm:w-auto sm:max-w-[140px]"
                         onChange={(e) => {
-                          const idx = e.target.value;
-                          if (idx) {
-                             const pessoa = equipeDoDept[idx];
+                          const val = e.target.value;
+                          if (val) {
+                             const pessoa = JSON.parse(val);
                              setInput(evento.id, 'nome', pessoa.nome);
                              setInput(evento.id, 'telefone', pessoa.telefone || '');
                              e.target.value = ""; // reseta o select
@@ -348,8 +351,12 @@ export default function EscalaContainer({ eventos, departamentos, slug, userRole
                         defaultValue=""
                       >
                          <option value="" disabled>Equipe...</option>
-                         {equipeDoDept.map((m: any, i: number) => (
-                           <option key={i} value={i}>{m.nome}</option>
+                         {deptsParaSelect.map(dept => (
+                           <optgroup key={dept.id} label={dept.nome}>
+                             {dept.equipe_json.map((m: any, i: number) => (
+                               <option key={`${dept.id}-${i}`} value={JSON.stringify(m)}>{m.nome}</option>
+                             ))}
+                           </optgroup>
                          ))}
                       </select>
                     )}

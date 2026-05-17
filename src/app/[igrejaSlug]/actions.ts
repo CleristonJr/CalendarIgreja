@@ -142,6 +142,7 @@ export async function editarEvento(formData: FormData) {
   const slug = formData.get('slug') as string
   const modo_edicao = formData.get('modo_edicao') as string || 'single' // 'single' | 'future'
   const doxologia_json = formData.get('doxologia_json') as string | null
+  const imagem_url = formData.get('imagem_url') as string | null
 
   let convidados: any[] = [];
   try {
@@ -187,6 +188,10 @@ export async function editarEvento(formData: FormData) {
       convidados,
       doxologia_json: doxologia
     };
+
+    if (imagem_url) {
+      objUpdate.imagem_url = imagem_url;
+    }
 
     if (!isAnsiao) {
        objUpdate.departamento_id = perfil.departamento_id; 
@@ -237,6 +242,10 @@ export async function editarEvento(formData: FormData) {
           convidados: objUpdate.convidados,
           data_inicio: evStart.toISOString(),
           data_fim: evEnd.toISOString(),
+        }
+
+        if (objUpdate.imagem_url) {
+          cascadeUpdate.imagem_url = objUpdate.imagem_url;
         }
 
         if (objUpdate.departamento_id !== undefined) {
