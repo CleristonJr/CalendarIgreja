@@ -4,10 +4,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import EventosSidebar from './EventosSidebar';
 import EventCard from './EventCard';
-import { X, Pencil, Users, Plus, Trash2, Repeat, ChevronLeft, ChevronRight } from 'lucide-react';
-import { editarEvento } from '@/app/[igrejaSlug]/actions';
+import { X, Pencil, Users, Plus, Trash2, Repeat, ChevronLeft, ChevronRight, Printer } from 'lucide-react';
+import { editarEvento, salvarDoxologia } from '@/app/[igrejaSlug]/actions';
 import DoxologiaEditor from '@/components/DoxologiaEditor';
 import { createClient } from '@/utils/supabase/client';
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface PortalContainerProps {
   igreja: any;
@@ -26,6 +28,8 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
   // Estados para Popups
   const [popupDoxologiaOpen, setPopupDoxologiaOpen] = useState(false);
   const [eventoParaDoxologia, setEventoParaDoxologia] = useState<any>(null);
+  const [doxologiaLocal, setDoxologiaLocal] = useState<any[]>([]);
+  const [doxologiaLoading, setDoxologiaLoading] = useState(false);
   
   const [popupEscaladosOpen, setPopupEscaladosOpen] = useState(false);
   const [eventoParaEscalados, setEventoParaEscalados] = useState<any>(null);
@@ -142,6 +146,120 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
 
   const handleRemoveGuest = (index: number) => {
     setConvidadosList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addComentarioDoxologia = (idx: number, texto: string) => {
+    if (!texto.trim()) return;
+    const isAnsiaoCheck = user?.role === 'ansiao' || user?.role === 'superadmin';
+    let myDeptName = departamentos?.find(d => d.id === user?.departamento_id)?.nome;
+    if (!myDeptName) {
+      if (isAnsiaoCheck && eventoParaDoxologia?.extendedProps?.departamento_nome) {
+        myDeptName = eventoParaDoxologia.extendedProps.departamento_nome;
+      } else {
+        myDeptName = 'Geral';
+      }
+    }
+    
+    setDoxologiaLocal(prev => {
+      const novo = [...prev];
+      if (!novo[idx].comentarios) novo[idx].comentarios = [];
+      novo[idx].comentarios.push({ autor: myDeptName, texto: texto.trim() });
+      return novo;
+    });
+  };
+
+  const removeComentarioDoxologia = (itemIdx: number, comIdx: number) => {
+    setDoxologiaLocal(prev => {
+      const novo = [...prev];
+      if (novo[itemIdx].comentarios) {
+        novo[itemIdx].comentarios.splice(comIdx, 1);
+      }
+      return novo;
+    });
+  };
+
+  const handleSalvarDoxologia = async () => {
+    if (!eventoParaDoxologia) return;
+    setDoxologiaLoading(true);
+    const formData = new FormData();
+    formData.append('evento_id', eventoParaDoxologia.id);
+    formData.append('slug', slug);
+    formData.append('doxologia_json', JSON.stringify(doxologiaLocal));
+
+    try {
+      await salvarDoxologia(formData);
+      setPopupDoxologiaOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      alert("Erro ao salvar doxologia: " + err.message);
+    } finally {
+      setDoxologiaLoading(false);
+    }
+  };
+
+  const gerarPdfDoxologia = () => {
+    if (!eventoParaDoxologia || !doxologiaLocal || doxologiaLocal.length === 0) {
+      alert("Nenhuma doxologia para exportar.");
+      return;
+    }
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const leftMargin = 16;
+    const rightMargin = 16;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const maxWidth = pageWidth - leftMargin - rightMargin;
+
+    // Cabeçalho
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Doxologia - ${eventoParaDoxologia.title}`, leftMargin, 20, { maxWidth });
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    const dataEvento = eventoParaDoxologia.start ? new Date(eventoParaDoxologia.start).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' }) : '';
+    doc.text(`Data: ${dataEvento}`, leftMargin, 28, { maxWidth });
+
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.4);
+    doc.line(leftMargin, 32, pageWidth - rightMargin, 32);
+
+    let cursorY = 38;
+
+    const formatarComentarios = (comentarios: any[]) => {
+      if (!comentarios || comentarios.length === 0) return "";
+      return comentarios.map((c: any) => `[${c.autor}] ${c.texto}`).join("\n");
+    };
+
+    const body = doxologiaLocal.map((item: any) => [
+      item.hora,
+      item.descricao,
+      formatarComentarios(item.comentarios)
+    ]);
+
+    autoTable(doc, {
+      startY: cursorY,
+      head: [["Horário", "Atividade", "Comentários"]],
+      body,
+      margin: { left: leftMargin, right: rightMargin },
+      styles: {
+        fontSize: 10,
+        cellPadding: 4,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [79, 70, 229],
+        textColor: 255,
+      },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: maxWidth - 25 - 70 },
+      },
+      theme: "grid",
+    });
+
+    const fileName = `doxologia-${eventoParaDoxologia.title.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+    doc.save(fileName);
   };
 
   const toDateTimeLocal = (dateStr: string) => {
@@ -300,6 +418,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                   evento={evento} 
                   onOpenDoxologia={() => {
                     setEventoParaDoxologia(evento);
+                    setDoxologiaLocal(JSON.parse(JSON.stringify(evento.extendedProps?.doxologia_json || [])));
                     setPopupDoxologiaOpen(true);
                   }}
                   onOpenEscalados={() => {
@@ -322,32 +441,121 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
       {/* MODAL DOXOLOGIA */}
       {popupDoxologiaOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative">
-            <button onClick={() => setPopupDoxologiaOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full">
-              <X className="w-5 h-5" />
-            </button>
-            <div className="p-8">
-              <h2 className="text-2xl font-black text-slate-800 mb-2">Doxologia do Culto</h2>
-              <p className="text-slate-500 font-medium mb-6">Visualização para {eventoParaDoxologia?.title}</p>
-              <div className="max-h-[60vh] overflow-y-auto pr-2">
-                {eventoParaDoxologia?.extendedProps?.doxologia_json && eventoParaDoxologia.extendedProps.doxologia_json.length > 0 ? (
-                  <div className="relative border-l-2 border-indigo-100 ml-3 space-y-6">
-                    {eventoParaDoxologia.extendedProps.doxologia_json.map((item: any, idx: number) => (
-                      <div key={idx} className="relative pl-6">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative flex flex-col max-h-[85vh]">
+            <div className="shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-slate-800">Doxologia do Culto</h2>
+                <p className="text-slate-500 font-medium text-sm mt-1">Visualização para {eventoParaDoxologia?.title}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={gerarPdfDoxologia} className="p-2 text-indigo-600 hover:bg-indigo-50 bg-indigo-50/50 rounded-full transition" title="Baixar PDF">
+                  <Printer className="w-5 h-5" />
+                </button>
+                <button onClick={() => setPopupDoxologiaOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full" title="Fechar">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              {doxologiaLocal && doxologiaLocal.length > 0 ? (
+                <div className="relative border-l-2 border-indigo-100 ml-3 space-y-6">
+                  {doxologiaLocal.map((item: any, idx: number) => {
+                    const isAnsiaoCheck = user?.role === 'ansiao' || user?.role === 'superadmin';
+                    const isOrganizador = isAnsiaoCheck || (user?.role === 'lider' && user?.departamento_id === eventoParaDoxologia?.extendedProps?.departamento_id);
+                    const isColaborador = user?.role === 'lider' && user?.departamento_id && (eventoParaDoxologia?.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
+                    const canEditDoxologia = isOrganizador || isColaborador;
+
+                    return (
+                      <div key={idx} className="relative pl-6 pb-2">
                         <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-4 ring-white shadow-sm"></div>
                         <div className="text-sm font-black text-indigo-600 tracking-wider mb-1">{item.hora}</div>
                         <div className="text-base font-semibold text-slate-800 leading-snug">{item.descricao}</div>
+                        
+                        {/* Comentários */}
+                        {item.comentarios && item.comentarios.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {item.comentarios.map((c: any, cIdx: number) => (
+                              <div key={cIdx} className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between items-start">
+                                <div>
+                                  <span className="text-[10px] uppercase font-bold text-slate-500 block">{c.autor}</span>
+                                  <span className="text-xs font-medium text-slate-700">{c.texto}</span>
+                                </div>
+                                {canEditDoxologia && (
+                                  <button onClick={() => removeComentarioDoxologia(idx, cIdx)} className="text-red-400 hover:text-red-600 p-1">
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Adicionar Comentário */}
+                        {canEditDoxologia && (
+                          <div className="mt-2 flex gap-2">
+                            <input 
+                              type="text" 
+                              id={`comment-${idx}`}
+                              placeholder="Adicionar comentário..." 
+                              className="w-full text-xs border border-slate-200 rounded p-1.5 outline-none focus:border-indigo-400"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  addComentarioDoxologia(idx, e.currentTarget.value);
+                                  e.currentTarget.value = '';
+                                }
+                              }}
+                            />
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById(`comment-${idx}`) as HTMLInputElement;
+                                if (input) {
+                                  addComentarioDoxologia(idx, input.value);
+                                  input.value = '';
+                                }
+                              }}
+                              className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded text-xs font-bold"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <span className="text-slate-400 font-bold block mb-1">Roteiro Indisponível</span>
-                    <span className="text-slate-500 text-sm">Este evento não possui um cronograma litúrgico ou passo-a-passo cadastrado.</span>
-                  </div>
-                )}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl flex flex-col items-center justify-center text-center">
+                  <span className="text-slate-400 font-bold block mb-1">Roteiro Indisponível</span>
+                  <span className="text-slate-500 text-sm">Este evento não possui um cronograma litúrgico ou passo-a-passo cadastrado.</span>
+                </div>
+              )}
             </div>
+
+            {/* Footer do Modal de Doxologia */}
+            {(() => {
+              const isAnsiaoCheck = user?.role === 'ansiao' || user?.role === 'superadmin';
+              const isOrganizador = isAnsiaoCheck || (user?.role === 'lider' && user?.departamento_id === eventoParaDoxologia?.extendedProps?.departamento_id);
+              const isColaborador = user?.role === 'lider' && user?.departamento_id && (eventoParaDoxologia?.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
+              const canEditDoxologiaGlobal = isOrganizador || isColaborador;
+
+              if (canEditDoxologiaGlobal && doxologiaLocal && doxologiaLocal.length > 0) {
+                return (
+                  <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end">
+                    <button 
+                      onClick={handleSalvarDoxologia}
+                      disabled={doxologiaLoading}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition shadow-sm disabled:opacity-50"
+                    >
+                      {doxologiaLoading ? 'Salvando...' : 'Salvar Alterações'}
+                    </button>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
       )}

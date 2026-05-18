@@ -307,3 +307,41 @@ export async function deletarEvento(formData: FormData) {
 
   revalidatePath(`/${slug}`)
 }
+
+export async function salvarDoxologia(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Acesso negado.")
+
+  const evento_id = formData.get('evento_id') as string
+  const slug = formData.get('slug') as string
+  const doxologia_json = formData.get('doxologia_json') as string
+
+  let doxologia: any[] = [];
+  try {
+    if (doxologia_json) doxologia = JSON.parse(doxologia_json);
+  } catch(e) { console.error("Erro ao dar parse em doxologia JSON") }
+
+  const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single()
+  const { data: evento_original } = await supabase.from('eventos').select('*').eq('id', evento_id).single()
+
+  if (!perfil || !evento_original) throw new Error("Dados não encontrados.")
+
+  if (perfil.role !== 'superadmin' && perfil.igreja_id !== evento_original.igreja_id) {
+    throw new Error("Acesso Negado: Você não pode editar eventos de outra igreja.")
+  }
+
+  const isAnsiao = perfil.role === 'ansiao' || perfil.role === 'superadmin';
+  const isOrganizador = isAnsiao || (perfil.role === 'lider' && perfil.departamento_id === evento_original.departamento_id && perfil.departamento_id !== null);
+  const isColaborador = perfil.role === 'lider' && perfil.departamento_id !== null && 
+                       (evento_original.colaboradores_ids || []).includes(perfil.departamento_id);
+
+  if (!isOrganizador && !isColaborador) {
+    throw new Error("Acesso Negado: Você não tem permissões para esse evento.")
+  }
+
+  const { error } = await supabase.from('eventos').update({ doxologia_json: doxologia }).eq('id', evento_id)
+  if (error) throw new Error("Erro de atualização: " + error.message)
+
+  revalidatePath(`/${slug}`)
+}
