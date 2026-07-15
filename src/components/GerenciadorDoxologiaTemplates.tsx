@@ -159,7 +159,7 @@ export default function GerenciadorDoxologiaTemplates({
                       className="flex-1 min-w-[140px] text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600"
                     />
 
-                    {departamentos && departamentos.length > 0 && (
+                    {departamentos && (
                       <select
                         value={item.departamento_id || ""}
                         onChange={e => atualizarItem(idx, 'departamento_id', e.target.value)}

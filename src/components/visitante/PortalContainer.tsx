@@ -11,6 +11,30 @@ import { createClient } from '@/utils/supabase/client';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const renderTextWithLinks = (text: string) => {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, i) => {
+    if (part.match(urlRegex)) {
+      const href = part.startsWith('http') ? part : `https://${part}`;
+      return (
+        <a 
+          key={i} 
+          href={href} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-indigo-600 hover:text-indigo-800 hover:underline break-all"
+        >
+          {part}
+        </a>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
 interface PortalContainerProps {
   igreja: any;
   departamentos: any[];
@@ -495,7 +519,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                               <div key={cIdx} className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between items-start">
                                 <div>
                                   <span className="text-[10px] uppercase font-bold text-slate-500 block">{c.autor}</span>
-                                  <span className="text-xs font-medium text-slate-700">{c.texto}</span>
+                                  <span className="text-xs font-medium text-slate-700 block mt-0.5">{renderTextWithLinks(c.texto)}</span>
                                 </div>
                                 {canCommentItem && (
                                   <button onClick={() => removeComentarioDoxologia(idx, cIdx)} className="text-red-400 hover:text-red-600 p-1">

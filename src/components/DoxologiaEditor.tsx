@@ -164,7 +164,7 @@ export default function DoxologiaEditor({
             />
 
             {/* Seleção de Departamento */}
-            {departamentos && departamentos.length > 0 && (
+            {departamentos && (
               <select
                 value={item.departamento_id || ""}
                 onChange={e => atualizarItem(item.id!, 'departamento_id', e.target.value)}
