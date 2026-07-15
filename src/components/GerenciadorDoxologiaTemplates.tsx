@@ -7,6 +7,7 @@ import { adicionarTemplateDoxologia, editarTemplateDoxologia, deletarTemplateDox
 interface DoxologiaItem {
   hora: string;
   descricao: string;
+  departamento_id?: string;
 }
 
 interface TemplateRow {
@@ -18,11 +19,13 @@ interface TemplateRow {
 export default function GerenciadorDoxologiaTemplates({
   igreja,
   slug,
-  templates
+  templates,
+  departamentos = []
 }: {
   igreja: any;
   slug: string;
   templates: TemplateRow[];
+  departamentos?: any[];
 }) {
   const [modoEdicao, setModoEdicao] = useState<TemplateRow | null>(null);
   
@@ -125,31 +128,55 @@ export default function GerenciadorDoxologiaTemplates({
               
               <div className="space-y-2 mb-3">
                 {itens.map((item, idx) => (
-                  <div key={idx} className="flex space-x-2 items-center group">
-                    <GripVertical className="w-4 h-4 text-slate-300 shrink-0 cursor-move" />
+                  <div key={idx} className="flex flex-col xl:flex-row gap-2 items-stretch xl:items-center group bg-white border border-slate-200 p-2 xl:border-none xl:p-0 xl:bg-transparent rounded-lg mb-2 xl:mb-0">
                     
-                    <input
-                      type="time"
-                      required
-                      value={item.hora}
-                      onChange={e => atualizarItem(idx, 'hora', e.target.value)}
-                      className="w-[110px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600"
-                    />
+                    <div className="flex items-center gap-2">
+                      <GripVertical className="w-4 h-4 text-slate-300 shrink-0 hidden xl:block cursor-move" />
+                      <input
+                        type="time"
+                        required
+                        value={item.hora}
+                        onChange={e => atualizarItem(idx, 'hora', e.target.value)}
+                        className="w-[100px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600"
+                      />
+                      {itens.length > 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => removerLinha(idx)}
+                          className="text-slate-400 hover:text-red-500 transition p-1.5 shrink-0 xl:hidden ml-auto bg-slate-50 rounded"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
 
                     <input
                       type="text"
                       required
-                      placeholder="Ex: Oração Invocatória"
+                      placeholder="Atividade (Ex: Sermão)"
                       value={item.descricao}
                       onChange={e => atualizarItem(idx, 'descricao', e.target.value)}
-                      className="w-full text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600"
+                      className="flex-1 min-w-[140px] text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600"
                     />
+
+                    {departamentos && departamentos.length > 0 && (
+                      <select
+                        value={item.departamento_id || ""}
+                        onChange={e => atualizarItem(idx, 'departamento_id', e.target.value)}
+                        className="xl:w-[150px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 text-ellipsis overflow-hidden bg-white"
+                      >
+                        <option value="">(Sem Responsável)</option>
+                        {departamentos.map(d => (
+                          <option key={d.id} value={d.id}>{d.nome}</option>
+                        ))}
+                      </select>
+                    )}
 
                     {itens.length > 1 && (
                       <button 
                         type="button" 
                         onClick={() => removerLinha(idx)}
-                        className="text-red-300 hover:text-red-500 transition p-1 shrink-0"
+                        className="text-slate-300 hover:text-red-500 transition p-1 shrink-0 hidden xl:block"
                       >
                        <X className="w-5 h-5" />
                       </button>

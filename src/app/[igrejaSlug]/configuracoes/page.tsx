@@ -258,6 +258,7 @@ export default async function ConfiguracoesIgreja({
                 igreja={igreja}
                 slug={slug}
                 templates={templates || []}
+                departamentos={departamentos || []}
               />
             </div>
           </>
