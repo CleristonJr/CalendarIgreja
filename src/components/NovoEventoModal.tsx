@@ -157,7 +157,7 @@ export default function NovoEventoModal({
               </div>
 
               {/* Módulo Doxologia Dinâmico */}
-              <DoxologiaEditor templates={templatesDox || []} />
+              <DoxologiaEditor templates={templatesDox || []} departamentos={departamentos} />
 
               {/* Upload de Imagem */}
               <div>

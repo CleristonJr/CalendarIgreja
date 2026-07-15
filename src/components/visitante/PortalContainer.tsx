@@ -230,11 +230,15 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
       return comentarios.map((c: any) => `[${c.autor}] ${c.texto}`).join("\n");
     };
 
-    const body = doxologiaLocal.map((item: any) => [
-      item.hora,
-      item.descricao,
-      formatarComentarios(item.comentarios)
-    ]);
+    const body = doxologiaLocal.map((item: any) => {
+      const depName = departamentos?.find(d => d.id === item.departamento_id)?.nome;
+      const atividadeStr = depName ? `[${depName}]\n${item.descricao}` : item.descricao;
+      return [
+        item.hora,
+        atividadeStr,
+        formatarComentarios(item.comentarios)
+      ];
+    });
 
     autoTable(doc, {
       startY: cursorY,
@@ -463,13 +467,25 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                   {doxologiaLocal.map((item: any, idx: number) => {
                     const isAnsiaoCheck = user?.role === 'ansiao' || user?.role === 'superadmin';
                     const isOrganizador = isAnsiaoCheck || (user?.role === 'lider' && user?.departamento_id === eventoParaDoxologia?.extendedProps?.departamento_id);
-                    const isColaborador = user?.role === 'lider' && user?.departamento_id && (eventoParaDoxologia?.extendedProps?.colaboradores_ids || []).includes(user?.departamento_id);
-                    const canEditDoxologia = isOrganizador || isColaborador;
+                    
+                    let canCommentItem = false;
+                    if (isOrganizador) {
+                      canCommentItem = true;
+                    } else if (item.departamento_id) {
+                      canCommentItem = (user?.role === 'lider' && user?.departamento_id === item.departamento_id);
+                    } else {
+                      canCommentItem = false;
+                    }
+
+                    const depName = departamentos?.find(d => d.id === item.departamento_id)?.nome;
 
                     return (
                       <div key={idx} className="relative pl-6 pb-2">
                         <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-indigo-500 ring-4 ring-white shadow-sm"></div>
-                        <div className="text-sm font-black text-indigo-600 tracking-wider mb-1">{item.hora}</div>
+                        <div className="text-sm font-black text-indigo-600 tracking-wider mb-1">
+                          {item.hora} 
+                          {depName && <span className="ml-2 text-[10px] uppercase bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded font-bold">{depName}</span>}
+                        </div>
                         <div className="text-base font-semibold text-slate-800 leading-snug">{item.descricao}</div>
                         
                         {/* Comentários */}
@@ -481,7 +497,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                                   <span className="text-[10px] uppercase font-bold text-slate-500 block">{c.autor}</span>
                                   <span className="text-xs font-medium text-slate-700">{c.texto}</span>
                                 </div>
-                                {canEditDoxologia && (
+                                {canCommentItem && (
                                   <button onClick={() => removeComentarioDoxologia(idx, cIdx)} className="text-red-400 hover:text-red-600 p-1">
                                     <X className="w-3 h-3" />
                                   </button>
@@ -492,7 +508,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                         )}
 
                         {/* Adicionar Comentário */}
-                        {canEditDoxologia && (
+                        {canCommentItem && (
                           <div className="mt-2 flex gap-2">
                             <input 
                               type="text" 
@@ -711,6 +727,7 @@ export default function PortalContainer({ igreja, departamentos, eventos, user, 
                 {isOrganizadorEdit && (
                   <DoxologiaEditor 
                     templates={templatesDox || []} 
+                    departamentos={departamentos || []}
                     doxologiaInicial={editingEvento.extendedProps?.doxologia_json || []}
                   />
                 )}

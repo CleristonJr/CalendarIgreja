@@ -625,6 +625,7 @@ export default function Calendario({
                   {isOrganizador && (
                     <DoxologiaEditor 
                       templates={templatesDox || []} 
+                      departamentos={departamentos || []}
                       doxologiaInicial={eventoSelecionado.extendedProps?.doxologia_json || []}
                     />
                   )}

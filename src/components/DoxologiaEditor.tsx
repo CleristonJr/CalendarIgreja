@@ -7,13 +7,16 @@ interface DoxologiaItem {
   id?: string;
   hora: string;
   descricao: string;
+  departamento_id?: string;
 }
 
 export default function DoxologiaEditor({
   templates,
+  departamentos = [],
   doxologiaInicial = []
 }: {
   templates: any[];
+  departamentos?: any[];
   doxologiaInicial?: DoxologiaItem[];
 }) {
   const [itens, setItens] = useState<DoxologiaItem[]>(() => {
@@ -147,6 +150,19 @@ export default function DoxologiaEditor({
               onChange={e => atualizarItem(item.id!, 'descricao', e.target.value)}
               className="w-full text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
             />
+
+            {departamentos && departamentos.length > 0 && (
+              <select
+                value={item.departamento_id || ""}
+                onChange={e => atualizarItem(item.id!, 'departamento_id', e.target.value)}
+                className="w-40 shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
+              >
+                <option value="">(Nenhum Responsável)</option>
+                {departamentos.map(d => (
+                  <option key={d.id} value={d.id}>{d.nome}</option>
+                ))}
+              </select>
+            )}
 
             <button 
               type="button" 
