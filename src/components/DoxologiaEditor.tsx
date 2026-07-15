@@ -131,46 +131,60 @@ export default function DoxologiaEditor({
         )}
 
         {itens.map((item) => (
-          <div key={item.id} className="flex space-x-2 items-center group">
-            <GripVertical className="w-4 h-4 text-slate-300 shrink-0" />
+          <div key={item.id} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center group bg-white border border-slate-200 p-2 sm:border-none sm:p-0 sm:bg-transparent rounded-lg mb-2 sm:mb-0">
             
-            <input
-              type="time"
-              required
-              value={item.hora}
-              onChange={e => atualizarItem(item.id!, 'hora', e.target.value)}
-              className="w-[110px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
-            />
+            {/* Grip e Horário (Mobile tem botão de remover na mesma linha) */}
+            <div className="flex items-center gap-2">
+              <GripVertical className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block cursor-grab" />
+              <input
+                type="time"
+                required
+                value={item.hora}
+                onChange={e => atualizarItem(item.id!, 'hora', e.target.value)}
+                className="w-[100px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
+              />
+              <button 
+                type="button" 
+                onClick={() => removerLinha(item.id!)}
+                className="text-slate-400 hover:text-red-500 transition p-1.5 shrink-0 sm:hidden ml-auto bg-slate-50 rounded"
+                title="Remover"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
+            {/* Descrição Flexível */}
             <input
               type="text"
               required
-              placeholder="Ex: Sermão principal"
+              placeholder="Atividade (Ex: Sermão)"
               value={item.descricao}
               onChange={e => atualizarItem(item.id!, 'descricao', e.target.value)}
-              className="w-full text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
+              className="flex-1 min-w-[140px] text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
             />
 
+            {/* Seleção de Departamento */}
             {departamentos && departamentos.length > 0 && (
               <select
                 value={item.departamento_id || ""}
                 onChange={e => atualizarItem(item.id!, 'departamento_id', e.target.value)}
-                className="w-40 shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white"
+                className="sm:w-[150px] shrink-0 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:border-indigo-600 bg-white text-ellipsis overflow-hidden"
               >
-                <option value="">(Nenhum Responsável)</option>
+                <option value="">(Sem Responsável)</option>
                 {departamentos.map(d => (
                   <option key={d.id} value={d.id}>{d.nome}</option>
                 ))}
               </select>
             )}
 
+            {/* Botão de Remover Desktop */}
             <button 
               type="button" 
               onClick={() => removerLinha(item.id!)}
-              className="text-slate-300 hover:text-red-500 transition p-1 shrink-0"
+              className="text-slate-300 hover:text-red-500 transition p-1 shrink-0 hidden sm:block"
               title="Remover"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         ))}
